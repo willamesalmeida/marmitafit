@@ -1,0 +1,70 @@
+const Joi = require("joi");
+/* password: Joi.string().pattern(new RegExp(("^(?=.*\d)(?=.*[a-zA-Z])(?=.*\W)[\d\w\W]{6,30}$"))).required(), */
+
+const rules = {
+  name: Joi.string().min(3).max(20).required(),
+  email: Joi.string().email().required(),
+  password: Joi.string().min(6).max(30).pattern(RegExp('^[a-zA-Z0-9]{6,30}$')),
+  confirmPassword: Joi.string().valid(Joi.ref("password")).required(),
+};
+
+const accountSignIn = (req, res, next) => {
+
+  const schema = Joi.object({
+    email: rules.email,
+    password: rules.password,
+  });
+
+  const options = { abortEarly: false };
+
+  const { error } = schema.validate(
+    {
+      email,
+      password,
+    },
+    options
+  );
+
+ /*  if (error) {
+    return res.status(400).json({
+      message: "validation error",
+      details: error.details.map((detail) => detail.message),
+    });
+  }
+ */
+  console.log(error.details.map(errDetail => errDetail.type), error);
+  next();
+};
+
+const accountSignUp = (req, res, next) => {
+  const { name, email, password, confirmPassword } = req.body;
+
+  const schema = Joi.object({
+    name: rules.name,
+    email: rules.email,
+    password: rules.password,
+    confirmPassword: rules.confirmPassword,
+  });
+
+  const option = { abortEarly: false };
+
+  const { error } = schema.validate(
+    {
+      name,
+      email,
+      password,
+      confirmPassword,
+    },
+    option
+  );
+  console.log(error)
+
+  if (error) {
+    return res.status(400).json({
+      message: "validation error",
+      details: error.details.map((detail) => detail.message),
+    });
+  }
+};
+
+module.exports = { accountSignUp, accountSignIn };

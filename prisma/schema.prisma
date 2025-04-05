@@ -18,11 +18,22 @@ model User {
   name      String
   email     String   @unique
   password  String
-  isAdmin   Boolean  @default(false)
+  isAdmin   Boolean  @default(false) //default is not admin
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now())
 }
 
+/**
+ * partes para colocar no cadastro de usuario
+ * birthday   DateTime
+ * street     String
+ * number     String
+ * complement String
+ * district   String? //optional
+ * city       String
+ * state      String
+ * zipCode    String
+ */
 model Product {
   id          Int    @id @default(autoincrement())
   name        String

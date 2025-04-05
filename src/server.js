@@ -9,6 +9,7 @@ const database = require("./config/database.js");
 const userRoutes = require("./routes/user.routes.js");
 
 const app = express();
+
 const corsOptions = {
   origin: "*",
   optionsSuccessStatus: 200,
@@ -19,7 +20,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use("/api/users", userRoutes); //add users routes
+app.use(userRoutes); //add users routes
 
 app.get("/", (req, res) => {
   res.send("API funcionando");
@@ -56,6 +57,7 @@ app.listen(PORT, async () => {
     /* await dbConection.sync( {alter: true}); */
     console.log(`The server is runing on port ${PORT}`);
     console.log(`http://${HOST}:${PORT}`);
+    console.log(require('crypto').randomBytes(32).toString('hex'))
   } catch (error) {
     console.error("Error to syncronized to database:", error);
   }
