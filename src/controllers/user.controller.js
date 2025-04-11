@@ -1,12 +1,10 @@
-const { decode } = require("jsonwebtoken");
 const { sendResetEmail } = require("../services/mail.service");
 const UserService = require("../services/user.service");
 
 const { generateResetToken, verifyResetToken } = require("../utils/jwt.utils");
+const { newPasswordSchema } = require("../validator/resetPassword.validation");
 
 class UserController {
-
-
   // register the user
   static async registerUser(req, res) {
     try {
@@ -37,7 +35,7 @@ class UserController {
 
       res.status(200).json({ message: "Login successful!", token });
     } catch (error) {
-      console.log(error)
+      console.log(error);
       res.status(401).json({ message: error.message });
     }
   }
@@ -66,27 +64,41 @@ class UserController {
         message: "Recovery email sent!",
       });
     } catch (error) {
+      console.log(error);
       res
         .status(500)
         .json({ message: "Error requesting password reset", error });
     }
   }
-  
+
   static async resetPassword(req, res) {
     try {
+      const { token, newPassword, confirmNewPassword } = req.body;
 
-      const { token, newPassword } = req.body;
+      //validation the data request
+      /* const { error } = newPasswordSchema.validate(
+        { newPassword, confirmNewPassword },
+        { abortEarly: false }
+      );
+      if (error) {
+        return res.status(400).json({
+          messege: "Validation error!",
+          errors: error.details.map((detail) => detail.message),
+        })
+      } */
 
       //verify token in request
-      const decoded = verifyResetToken(token)
-
+      const decoded = verifyResetToken(token);
+    
       //if false response the token is invalid or expired
-      if(!decoded){
-        return res.status(401).json({ message: "Invalid token or token expired" })
+      if (!decoded) {
+        return res
+          .status(401)
+          .json({ message: "Invalid token or token expired" });
       }
       //update the user password
-      await UserService.updatePassword(decoded.email, newPassword)
-      res.status(200).json({ message: "Password updated successfully" })
+      await UserService.updatePassword(decoded.email, newPassword);
+      res.status(200).json({ message: "Password updated successfully" });
     } catch (error) {
       res.status(500).json({ message: "Error resetting password", error });
     }

@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 async function testeConcection() {
   try {
     await prisma.$connect();
-    console.log("database conection sucessfully!")
+    console.log("Database connection successful!!")
   } catch (error) {
     console.error("Error connecting to the database:", error)
     

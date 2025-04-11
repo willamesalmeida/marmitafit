@@ -1,9 +1,9 @@
 const jwt = require("jsonwebtoken")
 require("dotenv").config()
-const option = '15m'
+const timeToExpire = '15m'
 
 const generateResetToken = (email) => {
-  return jwt.sign({email}, process.env.JWT_SECRET_KEY, {option})
+  return jwt.sign({ email }, process.env.JWT_SECRET_KEY,{ expiresIn: timeToExpire} )
 }
 
 const verifyResetToken = (token) => {

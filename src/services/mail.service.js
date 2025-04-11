@@ -1,4 +1,4 @@
-const { text } = require("express");
+/* const { text } = require("express");
 const nodemailer = require("nodemailer")
 
 const transporter = nodemailer.createTransport({
@@ -13,7 +13,7 @@ const sendResetEmail = async (email, token) => {
   const resetLink = `http://localhost:3000/reset-password?token=${token}`
 
   const mailOptions = {
-    from: 'no-reply@marmitasfit.com',
+    from: 'willames.almeida.b@gmail.com',
     to: email,
     subject: 'Redefinir senha',
     text: `Clique no link abaixo para redefinir sua senha: ${resetLink}`,
@@ -21,7 +21,29 @@ const sendResetEmail = async (email, token) => {
   };
 
   await transporter.sendMail(mailOptions)
-
+  console.log("email: ", email, "senha: ", token)
 }
 
-module.exports = {sendResetEmail}
+module.exports = {sendResetEmail} */
+
+const sendmail = require("@sendgrid/mail");
+require("dotenv").config();
+
+sendmail.setApiKey(process.env.SENDGRID_API_KEY);
+
+const sendResetEmail = async (email, token) => {
+  const resetLink = `http://localhost:3333/reset-password?token=${token}`;
+
+  const messege = {
+    to: email,
+    from: process.env.SENDER_EMAIL,
+    subject: "Redefinir senha",
+    text: `Clique no link abaixo para redefinir sua senha: ${resetLink}`,
+    html: `<p>Clique no link abaixo para redefinir sua senha: <a href="${resetLink}">${resetLink}<a/></p>`,
+  };
+  console.log("esse é o token:::::", token)
+
+  /* await sendmail.send(messege); */
+};
+
+module.exports = { sendResetEmail };
