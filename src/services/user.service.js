@@ -47,11 +47,7 @@ class UserService {
     if (!passwordMatched) throw new Error("Password incorrect");
 
     // generete a JWT token
-    const token = jwt.sign(
-      { userId: userBd.id, isAdmin: userBd.isAdmin },
-      process.env.JWT_SECRET_KEY,
-      { expiresIn: "1h" }
-    );
+    const token = jwt.sign({ userId: userBd.id, isAdmin: userBd.isAdmin },process.env.JWT_SECRET_KEY,{ expiresIn: "1h" });
 
     return token;
   }
