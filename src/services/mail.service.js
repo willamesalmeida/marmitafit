@@ -41,9 +41,8 @@ const sendResetEmail = async (email, token) => {
     text: `Clique no link abaixo para redefinir sua senha: ${resetLink}`,
     html: `<p>Clique no link abaixo para redefinir sua senha: <a href="${resetLink}">${resetLink}<a/></p>`,
   };
-  console.log("esse é o token:::::", token)
-
-  /* await sendmail.send(messege); */
+  console.log("Email enviado TOKEN: ", token)
+  // await sendmail.send(messege);
 };
 
 module.exports = { sendResetEmail };

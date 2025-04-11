@@ -4,11 +4,12 @@ const Joi = require("joi");
 const rules = {
   name: Joi.string().min(3).max(20).required(),
   email: Joi.string().email().required(),
-  password: Joi.string().min(6).max(30).pattern(RegExp('^[a-zA-Z0-9]{6,30}$')),
+  password: Joi.string().min(6).max(30).pattern(RegExp("/^[a-zA-Z0-9]{6,30}/$")),
   confirmPassword: Joi.string().valid(Joi.ref("password")).required(),
 };
 
 const accountSignIn = (req, res, next) => {
+  const { email, password } = req.body;
 
   const schema = Joi.object({
     email: rules.email,
@@ -25,14 +26,14 @@ const accountSignIn = (req, res, next) => {
     options
   );
 
- /*  if (error) {
+  if (error) {
     return res.status(400).json({
       message: "validation error",
       details: error.details.map((detail) => detail.message),
     });
   }
- */
-  console.log(error.details.map(errDetail => errDetail.type), error);
+
+  /* console.log(error.details.map(errDetail => errDetail.type), error);*/
   next();
 };
 
@@ -57,7 +58,6 @@ const accountSignUp = (req, res, next) => {
     },
     option
   );
-  console.log(error)
 
   if (error) {
     return res.status(400).json({
@@ -65,6 +65,34 @@ const accountSignUp = (req, res, next) => {
       details: error.details.map((detail) => detail.message),
     });
   }
+  next();
 };
 
-module.exports = { accountSignUp, accountSignIn };
+const passwordReset = (req, res, next) => {
+  const { newPassword, confirmNewPassword } = req.body;
+
+  const schema = Joi.object({
+    newPassword: rules.password,
+    confirmNewPassword: rules.confirmPassword,
+  });
+
+  const option = { abortEarly: false };
+
+  const { error } = schema.validate(
+    {
+      newPassword,
+      confirmNewPassword,
+    },
+    option
+  );
+
+  if (error) {
+    return res.status(400).json({
+      message: "validation error",
+      details: error.details.map((detail) => detail.message),
+    });
+  }
+  next();
+};
+
+module.exports = { accountSignUp, accountSignIn, passwordReset };

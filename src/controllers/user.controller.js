@@ -1,8 +1,7 @@
 const { sendResetEmail } = require("../services/mail.service");
 const UserService = require("../services/user.service");
-
 const { generateResetToken, verifyResetToken } = require("../utils/jwt.utils");
-const { newPasswordSchema } = require("../validator/resetPassword.validation");
+// const newPasswordSchema  = require("../validator/resetPassword.validation");
 
 class UserController {
   // register the user
@@ -75,27 +74,30 @@ class UserController {
     try {
       const { token, newPassword, confirmNewPassword } = req.body;
 
+      if (password != confirmNewPassword) {
+        return res.status(400).json({ message: "Passwords do not match" });
+      }
       //validation the data request
-      /* const { error } = newPasswordSchema.validate(
-        { newPassword, confirmNewPassword },
-        { abortEarly: false }
-      );
+      
+      /* const { error } = newPasswordSchema.validate({ newPassword, confirmNewPassword }, { abortEarly: false }); */
+
       if (error) {
         return res.status(400).json({
           messege: "Validation error!",
           errors: error.details.map((detail) => detail.message),
-        })
-      } */
+        });
+      }
 
       //verify token in request
       const decoded = verifyResetToken(token);
-    
+
       //if false response the token is invalid or expired
       if (!decoded) {
         return res
           .status(401)
           .json({ message: "Invalid token or token expired" });
       }
+
       //update the user password
       await UserService.updatePassword(decoded.email, newPassword);
       res.status(200).json({ message: "Password updated successfully" });
