@@ -54,6 +54,7 @@ class UserService {
   // makes a request to the database by a user via email
   // It is used to check whether the user exists in the database or 
   // not, in short, whether he is registered in the application.
+  
   static async getUserByEmail(email) {
     return await prisma.user.findUnique({ where: { email } });
   }

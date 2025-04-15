@@ -13,5 +13,4 @@ router.post('/reset-password/request', UserController.requestPasswordReset)
 router.post('/reset-password', /* passwordReset, */ UserController.resetPassword)
 
 
-
 module.exports = router
