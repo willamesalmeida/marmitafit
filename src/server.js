@@ -7,7 +7,7 @@ const cors = require("cors");
 const database = require("./config/database.js");
 //import routes for use in express
 const userRoutes = require("./routes/user.routes.js");
-
+const productRoutes = require("./routes/product.routes.js")
 const app = express();
 
 const corsOptions = {
@@ -19,15 +19,15 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 app.use(userRoutes); //add users routes
+app.use(productRoutes)//add product routes
 
 app.get("/", (req, res) => {
   res.send("API funcionando");
 });
 
 
-app.use((error, request, response, next) => {
+app.use((error, req, res, next) => {
   const { statusCode = 500, message = "Erro interno do servidor" } = error;
   
   if (process.env.APP_DEBUG) {

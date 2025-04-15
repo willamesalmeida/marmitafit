@@ -4,7 +4,7 @@ const Joi = require("joi");
 const rules = {
   name: Joi.string().min(3).max(20).required(),
   email: Joi.string().email().required(),
-  password: Joi.string().min(6).max(30).pattern(RegExp("/^[a-zA-Z0-9]{6,30}/$")),
+  password: Joi.string().min(6).max(30).pattern(new RegExp('^[a-zA-Z0-9]{6,30}$')).required(),
   confirmPassword: Joi.string().valid(Joi.ref("password")).required(),
 };
 

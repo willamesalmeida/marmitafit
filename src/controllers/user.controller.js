@@ -1,7 +1,7 @@
 const { sendResetEmail } = require("../services/mail.service");
 const UserService = require("../services/user.service");
 const { generateResetToken, verifyResetToken } = require("../utils/jwt.utils");
-// const newPasswordSchema  = require("../validator/resetPassword.validation");
+// const newPasswordSchema = require("../validator/resetPassword.validation");
 
 class UserController {
   // register the user
@@ -19,8 +19,10 @@ class UserController {
 
       res.status(201).json({ message: "User registered successfully!", user });
     } catch (error) {
-      res.status(400).json({ message: "Error registering user", error });
-      console.log(error);
+      res.status(400).json({
+        message: "Error registering user",
+        error,
+      });
     }
   }
 
@@ -34,8 +36,7 @@ class UserController {
 
       res.status(200).json({ message: "Login successful!", token });
     } catch (error) {
-      console.log(error);
-      res.status(401).json({ message: error.message });
+      res.status(401).json({ message: "Login error", error });
     }
   }
 
@@ -63,7 +64,6 @@ class UserController {
         message: "Recovery email sent!",
       });
     } catch (error) {
-      console.log(error);
       res
         .status(500)
         .json({ message: "Error requesting password reset", error });
@@ -74,19 +74,21 @@ class UserController {
     try {
       const { token, newPassword, confirmNewPassword } = req.body;
 
-      if (password != confirmNewPassword) {
+      if (newPassword != confirmNewPassword) {
         return res.status(400).json({ message: "Passwords do not match" });
       }
-      //validation the data request
-      
-      /* const { error } = newPasswordSchema.validate({ newPassword, confirmNewPassword }, { abortEarly: false }); */
+      /*  //validation the data request
+      const { error } = newPasswordSchema.validate(
+        { newPassword, confirmNewPassword },
+        { abortEarly: false }
+      );
 
       if (error) {
         return res.status(400).json({
           messege: "Validation error!",
           errors: error.details.map((detail) => detail.message),
         });
-      }
+      } */
 
       //verify token in request
       const decoded = verifyResetToken(token);
