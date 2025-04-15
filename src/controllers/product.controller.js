@@ -5,29 +5,35 @@ class ProductController {
   static async createProduct(req, res) {
     try {
       // captures the data coming from the request
-      const {name, description, price} = req.body;
+      let { name, description, price } = req.body;
+      price = parseInt(price, 10);
 
-      if(!(name && description && price)){
-        return res.status(400).json({message: "Please provide all the fields."});
+      if (!(name && description && price)) {
+        return res
+          .status(400)
+          .json({ message: "Please provide all the fields." });
       }
 
+      // captures the data coming from the request
+      /* const imageUrl = req.file ? `upload/${req.file.filename}` : null; */
+
+      const imageUrl = req.file ? `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}` : null; 
+      
+      if (!imageUrl) {
+        return res.status(400).json({ message: "Please upload an image" });
+      }
       // valide the data
-      const { error } = productSchema.validate({name,description, price}, { abordEarly });
-      console.log(req.body)
+      const { error } = productSchema.validate(
+        { name, description, price, imageUrl },
+        { abordEarly: false }
+      );
+
       if (error) {
         return res.status(400).json({
           message: "validation error",
           errors: error.details.map((error) => error.message),
         });
       }
-      
-      // captures the data coming from the request
-      const imageUrl = req.file ? `src/upload/${req.file.filename}` : null
-      
-      if(!imageUrl) {
-        return res.status(400).json({ message: "Please upload an image" });
-      }
-      
       //create a product in database
       const product = await productService.createProduct(
         name,
@@ -36,11 +42,12 @@ class ProductController {
         imageUrl
       );
 
-      console.log("product",product)
-
-      res.status(201).json({ message: "product registered successfully", product });
+      res
+        .status(201)
+        .json({ message: "product registered successfully", product });
     } catch (error) {
-      res.status(500).json({ message: "error registering product", error})
+      console.log("error", error);
+      res.status(500).json({ message: "error registering product", error });
     }
   }
 }
