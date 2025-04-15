@@ -32,13 +32,13 @@ app.use((error, req, res, next) => {
   
   if (process.env.APP_DEBUG) {
     console.error(error);
-    return response.status(statusCode).json({
+    return res.status(statusCode).json({
       status: "Error",
       message,
       error,
     });
   } else {
-    return response.status(statusCode).json({
+    return res.status(statusCode).json({
       status: "Error",
       message,
     });
