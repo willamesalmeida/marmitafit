@@ -14,17 +14,18 @@ class ProductController {
           .json({ message: "Please provide all the fields." });
       }
 
-      // captures the data coming from the request
+      // captures the image coming from the request
       /* const imageUrl = req.file ? `upload/${req.file.filename}` : null; */
+      // const imageUrl = req.file ? `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}` : null;
+      const imageUrl = req.file?.path;
+      const publicId = req.file?.filename; // get the 'puclicId created by cloudinary 
 
-      const imageUrl = req.file ? `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}` : null; 
-      
       if (!imageUrl) {
         return res.status(400).json({ message: "Please upload an image" });
       }
       // valide the data
       const { error } = productSchema.validate(
-        { name, description, price, imageUrl },
+        { name, description, price, imageUrl, publicId },
         { abordEarly: false }
       );
 
@@ -39,15 +40,43 @@ class ProductController {
         name,
         description,
         price,
-        imageUrl
+        imageUrl,
+        publicId,
       );
 
       res
         .status(201)
         .json({ message: "product registered successfully", product });
     } catch (error) {
-      console.log("error", error);
       res.status(500).json({ message: "error registering product", error });
+    }
+  }
+
+  static async deleteProduct(req, res) {
+    try {
+      const { id } = req.params;
+
+      const deleteProduct = await productService.deleteProduct(id);
+
+      if (!deleteProduct) {
+        return res.status(404).json({ message: "Product not found!", error });
+      }
+
+      res.status(200).json({ message: "Product deleted successfully!" });
+    } catch (error) {
+      res.status(500).json({ message: "Error to delete the product!", error });
+    }
+  }
+
+  static async getAllProducts(req, res) {
+    try {
+      const { page= 1, limit= 10 } = req.query;
+      const product = await productService.getAllProducts(Number(page), Number(limit))
+
+      res.status(200).json(product) // return list contain all products
+      } catch (error) {
+        res.status(500).json({ message: "Error to get products!", error})
+    
     }
   }
 }

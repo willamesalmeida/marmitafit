@@ -6,6 +6,7 @@ const productSchema = Joi.object({
   description: Joi.string().min(10).max(300).required(),
   // imageUrl: Joi.string().uri().required(),
   imageUrl: Joi.string().required(),
+  publicId: Joi.string().required(),
 });
 
 module.exports = { productSchema };
