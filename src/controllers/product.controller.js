@@ -31,7 +31,7 @@ class ProductController {
 
       if (error) {
         return res.status(400).json({
-          message: "validation error",
+          message: "Validation error",
           errors: error.details.map((error) => error.message),
         });
       }
@@ -46,9 +46,9 @@ class ProductController {
 
       res
         .status(201)
-        .json({ message: "product registered successfully", product });
+        .json({ message: "Product registered successfully", product });
     } catch (error) {
-      res.status(500).json({ message: "error registering product", error });
+      res.status(500).json({ message: "Error registering product", error });
     }
   }
 
@@ -57,14 +57,13 @@ class ProductController {
       const { id } = req.params;
 
       const deleteProduct = await productService.deleteProduct(id);
-    /*   console.log('deleteproduct',deleteProduct)
-      if (!deleteProduct) {
+
+      if (deleteProduct.error) {
         return res.status(404).json({ message: "Product not found!", error });
       }
- */
+
       res.status(200).json({ message: "Product deleted successfully!", deleteProduct});
     } catch (error) {
-      console.log("error econtrado:", error)
       res.status(500).json({ message: "Error to delete the product!", error });
     }
   }
