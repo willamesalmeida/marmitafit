@@ -57,13 +57,14 @@ class ProductController {
       const { id } = req.params;
 
       const deleteProduct = await productService.deleteProduct(id);
-
+    /*   console.log('deleteproduct',deleteProduct)
       if (!deleteProduct) {
         return res.status(404).json({ message: "Product not found!", error });
       }
-
-      res.status(200).json({ message: "Product deleted successfully!" });
+ */
+      res.status(200).json({ message: "Product deleted successfully!", deleteProduct});
     } catch (error) {
+      console.log("error econtrado:", error)
       res.status(500).json({ message: "Error to delete the product!", error });
     }
   }
