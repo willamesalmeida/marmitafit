@@ -13,12 +13,17 @@ class productService {
     const product = await prisma.product.findUnique({
       where: { id: Number(id) },
     });
-    console.log('product: ', product)
+
     try {
-      if (!product) throw new Error( "The product you are trying to delete was not found in the database!");
-            
+
+      if (!product)
+        throw new Error(
+          "The product you are trying to delete was not found in the database!"
+        );
+
     } catch (error) {
-      return { error: "product not found!", details: error.message}
+      
+      return { error: "Product not found!", details: error.message };
     }
 
     //Delete the image on cloudinary before remove product on database
@@ -47,7 +52,7 @@ class productService {
       skip,
       take: limit,
     });
-    
+
     const totalProducts = await prisma.product.count();
     return {
       page,
