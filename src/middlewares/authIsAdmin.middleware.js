@@ -41,19 +41,22 @@ const verifyTokenMiddleware = (req, res, next) => {
   }
 
   try {
-    const decoded = verifyResetToken(token);
+    // const decoded = verifyResetToken(token);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY)
 
-    // const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY)
-    if (!decoded || decode.error) {
+    if (decoded.error) {
       return res.status(403).json({
-        message: "Invalid token or expired token!",
-        details: decoded?.error || "Token verification failed!",
+        message: "The token sent is invalid or has expired!",
+        details: decoded.details,
       });
     }
+
     req.user = decoded;
+
     next();
   } catch (error) {
-    res.status(403).json({ message: "Invalid token or token expire!" });
+    console.log(error)
+    res.status(403).json({ message: "Invalid token or token expire!", error });
   }
 };
 

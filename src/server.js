@@ -8,6 +8,8 @@ const database = require("./config/database.js");
 //import routes for use in express
 const userRoutes = require("./routes/user.routes.js");
 const productRoutes = require("./routes/product.routes.js")
+//import middleware handle error
+const errorHandlerMiddleware = require("./middlewares/errorHandler.middleware.js")
 const app = express();
 
 const corsOptions = {
@@ -26,7 +28,14 @@ app.get("/", (req, res) => {
   res.send("API funcionando");
 });
 
+(async () => {
+  await database();
+})();
 
+const PORT = process.env.PORT || 5000;
+const HOST = process.env.DB_HOST;
+
+/*error middleware
 app.use((error, req, res, next) => {
   const { statusCode = 500, message = "Erro interno do servidor" } = error;
   
@@ -43,28 +52,10 @@ app.use((error, req, res, next) => {
       message,
     });
   }
-});
+}); */
 
-(async () => {
-  await database();
-})();
-
-const PORT = process.env.PORT || 5000;
-const HOST = process.env.DB_HOST;
-
-app.listen(PORT, async () => {
-  try {
-    /* await dbConection.sync( {alter: true}); */
-    console.log(`The server is runing on port ${PORT}`);
-    console.log(`http://${HOST}:${PORT}`);
-    console.log(require('crypto').randomBytes(32).toString('hex'))
-  } catch (error) {
-    console.error("Error to syncronized to database:", error);
-  }
-
-
-
-  /* app.use( function (error, request, response, next){
+ /* another error middleware 
+ app.use( function (error, request, response, next){
     if(process.env.APP_DEBUG){
       console.error(error);
       return response.status(error.statusCode ?? 500).json({
@@ -79,5 +70,17 @@ app.listen(PORT, async () => {
       })
     }
   }) */
+
+app.use(errorHandlerMiddleware)
+app.listen(PORT, async () => {
+  try {
+    /* await dbConection.sync( {alter: true}); */
+    console.log(`The server is runing on port ${PORT}`);
+    console.log(`http://${HOST}:${PORT}`);
+    // gerador de secretekey para jwt
+    // console.log(require('crypto').randomBytes(32).toString('hex'))
+  } catch (error) {
+    console.error("Error to syncronized to database:", error);
+  }
  
 });
