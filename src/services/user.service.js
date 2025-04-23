@@ -131,7 +131,9 @@ class UserService {
         where: { email },
         data: { password: hashedPassword },
       });
+
       return { message: "Password updated successfully!" };
+      
     } catch (error) {
       throw new AppError(
         error.message || "Error updating password!",

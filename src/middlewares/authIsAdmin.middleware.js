@@ -42,6 +42,7 @@ const verifyTokenMiddleware = (req, res, next) => {
 
   try {
     // const decoded = verifyResetToken(token);
+    //const decoded = verifyAccessToken(token)
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY)
 
     if (decoded.error) {
