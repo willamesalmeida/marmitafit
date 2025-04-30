@@ -9,7 +9,7 @@ const router = Router();
 router.post("/register", /* accountSignUp, */ UserController.registerUser);
 router.post("/login", /* accountSignIn, */ UserController.loginUser);
 router.post("/logout", UserController.logout);
-router.post("/refresh", UserController.refreshToken);
+router.post("/refresh", UserController.userRefreshToken);
 router.post("/reset-password/request", UserController.requestPasswordReset);
 router.post("/reset-password",/* passwordReset, */ UserController.resetPassword);
 

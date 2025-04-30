@@ -1,19 +1,22 @@
 const { PrismaClient } = require("@prisma/client");
 const cloudinary = require("../config/cloudinary");
+const AppError = require("../utils/errorHandler.util")
 
 const prisma = new PrismaClient();
 
 class productService {
-  static async createProduct(name, description, price, imageUrl, publicId) {
+  static async createProduct(userId, name, description, price, imageUrl, publicId) {
     try {
-      if (!name || !description || !price || !imageUrl) {
+      if (!userId || !name || !description || !price || !imageUrl) {
         throw new AppError("All product fields are required!", 400);
       }
 
       return await prisma.product.create({
-        data: { name, description, price, imageUrl, publicId },
+        data: {userId, name, description, price, imageUrl, publicId },
       });
+
     } catch (error) {
+      console.log(error)
       throw new AppError("Error registering product!", 500);
     }
   }

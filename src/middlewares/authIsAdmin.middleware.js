@@ -1,6 +1,8 @@
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
-const { verifyResetToken } = require("../utils/jwt.utils");
+const {verifyAccessToken} = require("../utils/jwt.utils")
+
+
 
 const authIsAdminMiddleware = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
@@ -12,16 +14,15 @@ const authIsAdminMiddleware = (req, res, next) => {
   }
 
   try {
-    const decoded = verifyResetToken(token);
+    // const decoded = verifyResetToken(token); //everytime I use this functio to verify token, was returned an error
     // const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY); //decodes the token received in the request
-    if (
-      !decoded ||
-      typeof decoded.isAdmin === "undefined" ||
-      !decoded.isAdmin
-    ) {
+
+    const decoded = verifyAccessToken(token)
+
+    if (!decoded || typeof decoded.isAdmin === "undefined" || !decoded.isAdmin ) {
       return res.status(401).json({
         message:
-          "Access denied. You don't have permission. Only administrators can register a product",
+          "Access denied! You don't have permission, only administrators can register a product",
       });
     }
 
@@ -56,7 +57,6 @@ const verifyTokenMiddleware = (req, res, next) => {
 
     next();
   } catch (error) {
-    console.log(error)
     res.status(403).json({ message: "Invalid token or token expire!", error });
   }
 };

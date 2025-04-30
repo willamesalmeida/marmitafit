@@ -7,9 +7,10 @@ const cors = require("cors");
 const database = require("./config/database.js");
 //import routes for use in express
 const userRoutes = require("./routes/user.routes.js");
-const productRoutes = require("./routes/product.routes.js")
+const productRoutes = require("./routes/product.routes.js");
+const orderRoutes = require("./routes/order.routes.js");
 //import middleware handle error
-const errorHandlerMiddleware = require("./middlewares/errorHandler.middleware.js")
+const errorHandlerMiddleware = require("./middlewares/errorHandler.middleware.js");
 const app = express();
 
 const corsOptions = {
@@ -22,7 +23,8 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(userRoutes); //add users routes
-app.use(productRoutes)//add product routes
+app.use(productRoutes); //add product routes
+app.user(orderRoutes); //add order routes
 
 app.get("/", (req, res) => {
   res.send("API funcionando");
@@ -54,7 +56,7 @@ app.use((error, req, res, next) => {
   }
 }); */
 
- /* another error middleware 
+/* another error middleware 
  app.use( function (error, request, response, next){
     if(process.env.APP_DEBUG){
       console.error(error);
@@ -71,7 +73,7 @@ app.use((error, req, res, next) => {
     }
   }) */
 
-app.use(errorHandlerMiddleware)
+app.use(errorHandlerMiddleware);
 app.listen(PORT, async () => {
   try {
     /* await dbConection.sync( {alter: true}); */
@@ -82,5 +84,4 @@ app.listen(PORT, async () => {
   } catch (error) {
     console.error("Error to syncronized to database:", error);
   }
- 
 });

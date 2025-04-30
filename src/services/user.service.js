@@ -5,6 +5,8 @@ const AppError = require("../utils/errorHandler.util");
 
 //import JWT autenticate
 const jwt = require("jsonwebtoken");
+//Function DTO
+const userDTO = require("../dtos/user.dtos");
 
 const prisma = new PrismaClient();
 /* const salt = 10;
@@ -79,8 +81,8 @@ class UserService {
         process.env.JWT_SECRET_KEY,
         { expiresIn: "1h" }
       );
-
-      return { message: "Login successful!", token };
+    
+      return { message: "Login successful!", token, user: userDTO(userBd) };
       
     } catch (error) {
       throw new AppError(
