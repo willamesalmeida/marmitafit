@@ -13,7 +13,8 @@ const {
   verifyResetToken,
   generateAccessToken,
   generateRefreshToken,
-  verifyRefreshAccessToken,
+  verifyRefreshToken,
+  verifyAccessToken,
 } = require("../utils/jwt.utils");
 
 //file with functions needed for the controller
@@ -61,11 +62,11 @@ class UserController {
         userId: user.id,
         isAdmin: user.isAdmin,
       });
+
       const refreshToken = generateRefreshToken({ userId: user.id });
 
       // define data do expire refreshToken
-
-      const expiresIn = dayjs().add(7, "day").toDate();
+      const expiresIn = dayjs().add(2, "minute").toDate();
       // const expiresIn = new Date(Date.now() + 7 * 24 * 60 * 60 * 100);
 
       await RefreshTokenService.saveRefreshToken(
@@ -76,8 +77,8 @@ class UserController {
 
       /*  if(token.error){
         return res.status(400).json({ message: "Invalid credentials", error });
-      }  */
-
+      } */
+      console.log("accessToken to teste (esse console esta no usercontroller): ", accessToken)
       res
         .status(200)
         .json({ message: "Login successful!", accessToken, refreshToken });
@@ -141,7 +142,8 @@ class UserController {
       } */
 
       //verify token in request
-      const decoded = verifyResetToken(token);
+      // const decoded = verifyResetToken(token);
+      const decoded = verifyAccessToken(token)
 
       //if false response the token is invalid or expired
       if (decoded.error) {
@@ -160,22 +162,27 @@ class UserController {
     }
   }
   // checks the refresh token and creates a new access token
-  static async refreshToken(req, res, next) {
+  static async userRefreshToken(req, res, next) {
     try {
       const { refreshToken } = req.body;
+
+      console.log("REFRESHTOKEN: ", refreshToken);
+
       if (!refreshToken) {
         throw new AppError("Refresh token not provided", 401);
       }
-
+      
       //Search for refresh token in database
       const storedToken = await RefreshTokenService.findRefreshToken(
         refreshToken
       );
+      console.log("storedToken", storedToken);
       if (!storedToken) {
+        console.log("log do storedtoken")
         throw new AppError("Invalid refresh token", 403);
       }
       // Verify if the refresh token is expired
-      verifyRefreshAccessToken(refreshToken);
+      verifyRefreshToken(refreshToken);
 
       //verify if the refresh token stored is expired
       if (dayjs(storedToken.expiresIn).isBefore(dayjs())) {
@@ -189,6 +196,7 @@ class UserController {
       const newAccessToken = generateAccessToken({
         userId: storedToken.userId,
       });
+
       res.status(200).json({ accessToken: newAccessToken });
     } catch (error) {
       next(error);
@@ -199,7 +207,7 @@ class UserController {
     try {
       const { refreshToken } = req.body;
       if (!refreshToken) {
-        throw new AppError("Refresh tokne required", 400);
+        throw new AppError("Refresh token required", 400);
       }
 
       // mark the refresh token as invalid

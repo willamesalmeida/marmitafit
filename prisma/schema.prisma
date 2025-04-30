@@ -23,6 +23,8 @@ model User {
   updatedAt DateTime @default(now())
 
   RefreshToken RefreshToken?
+  Product      Product[]
+  Order        Order[]
 }
 
 /**
@@ -38,22 +40,59 @@ model User {
  */
 model Product {
   id          Int      @id @default(autoincrement())
+  userId      String
   name        String
-  description String   @db.VarChar(255)
+  description String   @db.VarChar(512)
   price       Float
   imageUrl    String
   publicId    String //storage the ID the image on cloudinary
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now())
+
+  OrderItem OrderItem[]
+
+  user User @relation(fields: [userId], references: [id])
 }
 
 model RefreshToken {
   id        String   @id @default(uuid())
   userId    String   @unique
-  token     String
+  token     String   @unique @db.VarChar(512)
   expiresIn DateTime
   createdAt DateTime @default(now())
   isRevoked Boolean  @default(false)
 
   user User @relation(fields: [userId], references: [id])
+}
+
+enum OrderStatus {
+  PEDDING
+  IN_PREPARATION
+  ON_THE_WAY
+  READY_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+model Order {
+  id        Int         @id @default(autoincrement())
+  userId    String
+  status    OrderStatus @default(PEDDING) //use enum to define status
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  OrderItem OrderItem[]
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model OrderItem {
+  id        Int   @id @default(autoincrement())
+  orderId   Int // ID of the order to which the item belongs
+  productId Int // Product ID associated with the item
+  quantity  Int // Quantity of products in the order
+  price     Float //Item price (fixed at time of purchase)
+
+  product Product @relation(fields: [productId], references: [id])
+  order   Order   @relation(fields: [orderId], references: [id])
 }
