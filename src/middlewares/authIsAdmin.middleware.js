@@ -54,7 +54,6 @@ const verifyTokenMiddleware = (req, res, next) => {
     }
 
     req.user = decoded;
-
     next();
   } catch (error) {
     res.status(403).json({ message: "Invalid token or token expire!", error });

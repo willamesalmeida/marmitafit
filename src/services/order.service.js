@@ -4,10 +4,11 @@ const AppError = require("../utils/errorHandler.util");
 
 class OrderService {
   // Creates a user-conditioned order
-  static async createOrder(userId, item) {
+  static async createOrder(userId, items) {
     try {
+     
       //verify if item if pass theougt de function params
-      if (!userId || !item || item.length === 0) {
+      if (!userId || !items || items.length === 0) {
         throw new AppError("User ID is required to create an order", 400);
       }
 
@@ -18,32 +19,35 @@ class OrderService {
         const product = await prisma.product.findUnique({
           where: { id: item.productId },
         });
+
+        //verifyu if product return the products thats coming from request
         if (!product) {
           throw new AppError(
             `Product with ID ${item.productId} not found!`,
             404
           );
         }
-      }
 
-      //add validate items on the list
-      orderItems.push({
-        productId: item.productId,
-        quantity: item.quantity,
-        price: product.price,
-      });
+        //add validate items on the list
+        orderItems.push({
+          productId: item.productId,
+          quantity: item.quantity,
+          price: product.price,
+        });
+      }
 
       // Creates the order with default status "pending"
       const order = await prisma.order.create({
         data: {
           userId,
-          orderItem: {
+          OrderItem: {
             create: orderItems,
           },
         },
-        includes: { orderItem: { include: { product: true } } },
+        include: { OrderItem: { include: { product: true } } },
       });
       return order;
+
     } catch (error) {
       throw new AppError(error.message || "Error creating order!", 500);
     }
@@ -54,7 +58,7 @@ class OrderService {
       return await prisma.order.findMany({
         where: { userId },
         include: {
-          orderItem: { include: { product: true } }, // inclue items em product associeted
+          OrderItem: { include: { product: true } }, // inclue items em product associeted
         },
         orderBy: { createdAt: "desc" },
       });
@@ -67,8 +71,8 @@ class OrderService {
     const allowedStatuses = [
       "PENDING",
       "IN_PREPARATION",
-      "ON_THE_WAY",
       "READY_FOR_DELIVERY",
+      "ON_THE_WAY",
       "DELIVERED",
       "CANCELLED",
     ];
@@ -82,10 +86,15 @@ class OrderService {
     const currentOrder = await prisma.order.findUnique({
       where: { id: orderId },
     });
+
     if (!currentOrder) {
       throw new AppError("Order not found!", 404);
     }
 
+    if (!currentOrder.status) {
+      throw new AppError("Order status is undefined", 400);
+    }
+    
     // Define the transition rules: for each status, which statuses are allowed for transition
     const allowedTransitions = {
       PENDING: ["IN_PREPARATION", "CANCELLED"],
@@ -95,8 +104,10 @@ class OrderService {
       DELIVERED: [],
       CANCELLED: [],
     };
+    
+    const currentStatus = currentOrder.status.toUpperCase()
     // Verifica se a transição a partir do status atual para o novo status é permitida
-    if (!allowedTransitions[currentOrder.status].includes(newStatus)) {
+    if (!allowedTransitions[currentStatus]?.includes(newStatus)) {
       throw new AppError(
         `Invalid status transition from ${currentOrder.status} to ${newStatus}`,
         400
@@ -109,7 +120,7 @@ class OrderService {
       data: {
         status: newStatus,
       },
-      include: { orderItem: { include: { product: true } } },
+      include: { OrderItem: { include: { product: true } } },
     });
     return order;
   }
