@@ -1,16 +1,17 @@
-const OrderService = require("../services");
+const OrderService = require("../services/order.service");
 const AppError = require("../utils/errorHandler.util");
 
 class OrderController {
   static async createOrder(req, res, next) {
     try {
       const userId = req.user.userId;
+
       const { items } = req.body;
 
       if (!items || items.length === 0) {
         throw new AppError("Order must include at least one item!");
       }
-      const order = await OrderService.createOrder(userId);
+      const order = await OrderService.createOrder(userId, items);
       res.status(201).json({
         message: "Order Created successfully!",
         order,
@@ -22,7 +23,7 @@ class OrderController {
   static async getOrder(req, res, next) {
     try {
       const userId = req.user.userId;
-      const orders = await OrderService.getOrdersByUser(userId);
+      const orders = await OrderService.getOrderByUser(userId);
       res.status(200).json({ orders });
     } catch (error) {
       next(error);
@@ -38,7 +39,7 @@ class OrderController {
         throw new AppError("Order ID and new status are required!", 400);
       }
       // Calls the service method that updates the status.
-      const order = await OrderService.updateOrderStatus(orderId, newStatus);
+      const order = await OrderService.updateOderStatus(orderId, newStatus);
       // Returns the response with the updated request.
       res.status(200).json({
         message: "Order status updated succefully",

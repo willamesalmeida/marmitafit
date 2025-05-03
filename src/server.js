@@ -24,7 +24,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(userRoutes); //add users routes
 app.use(productRoutes); //add product routes
-app.user(orderRoutes); //add order routes
+app.use(orderRoutes); //add order routes
 
 app.get("/", (req, res) => {
   res.send("API funcionando");
