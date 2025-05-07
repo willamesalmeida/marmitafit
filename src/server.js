@@ -5,14 +5,19 @@ const cors = require("cors");
 
 //import database connection
 const database = require("./config/database.js");
+
 //import routes for use in express
 const userRoutes = require("./routes/user.routes.js");
 const productRoutes = require("./routes/product.routes.js");
 const orderRoutes = require("./routes/order.routes.js");
+const cartRoutes = require("./routes/cart.routes.js");
+
 //import middleware handle error
 const errorHandlerMiddleware = require("./middlewares/errorHandler.middleware.js");
-const {limiter, speedLimiter} = require("./middlewares/rateLimiter.middleware.js")
-
+const {
+  limiter,
+  speedLimiter,
+} = require("./middlewares/rateLimiter.middleware.js");
 
 const app = express();
 
@@ -26,12 +31,13 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 //middleware limit rate and slowing down request
-app.use(limiter)
-app.use(speedLimiter)
-//middleware routes 
+app.use(limiter);
+app.use(speedLimiter);
+//middleware routes
 app.use(userRoutes); //add users routes
 app.use(productRoutes); //add product routes
 app.use(orderRoutes); //add order routes
+app.use(cartRoutes); //add cart routes
 
 app.get("/", (req, res) => {
   res.send("API funcionando");

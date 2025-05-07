@@ -25,6 +25,7 @@ model User {
   RefreshToken RefreshToken?
   Product      Product[]
   Order        Order[]
+  Cart         Cart?
 }
 
 /**
@@ -51,7 +52,8 @@ model Product {
 
   OrderItem OrderItem[]
 
-  user User @relation(fields: [userId], references: [id])
+  user     User       @relation(fields: [userId], references: [id])
+  CartItem CartItem[]
 }
 
 model RefreshToken {
@@ -95,4 +97,25 @@ model OrderItem {
 
   product Product @relation(fields: [productId], references: [id])
   order   Order   @relation(fields: [orderId], references: [id])
+}
+
+model Cart {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items CartItem[]
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model CartItem {
+  id        String @id @default(uuid())
+  cartId    String
+  productId Int
+  quantity  Int
+
+  cart    Cart    @relation(fields: [cartId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
 }
