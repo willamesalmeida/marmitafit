@@ -11,6 +11,9 @@ const productRoutes = require("./routes/product.routes.js");
 const orderRoutes = require("./routes/order.routes.js");
 //import middleware handle error
 const errorHandlerMiddleware = require("./middlewares/errorHandler.middleware.js");
+const {limiter, speedLimiter} = require("./middlewares/rateLimiter.middleware.js")
+
+
 const app = express();
 
 const corsOptions = {
@@ -22,6 +25,10 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+//middleware limit rate and slowing down request
+app.use(limiter)
+app.use(speedLimiter)
+//middleware routes 
 app.use(userRoutes); //add users routes
 app.use(productRoutes); //add product routes
 app.use(orderRoutes); //add order routes

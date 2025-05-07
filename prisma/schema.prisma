@@ -68,8 +68,8 @@ model RefreshToken {
 enum OrderStatus {
   PENDING
   IN_PREPARATION
-  ON_THE_WAY
   READY_FOR_DELIVERY
+  ON_THE_WAY
   DELIVERED
   CANCELLED
 }
