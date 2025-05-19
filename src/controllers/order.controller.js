@@ -39,7 +39,7 @@ class OrderController {
         throw new AppError("Order ID and new status are required!", 400);
       }
       // Calls the service method that updates the status.
-      const order = await OrderService.updateOderStatus(orderId, newStatus);
+      const order = await OrderService.updateOrderStatus(orderId, newStatus);
       // Returns the response with the updated request.
       res.status(200).json({
         message: "Order status updated succefully",

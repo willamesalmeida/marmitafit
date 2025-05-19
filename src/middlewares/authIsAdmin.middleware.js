@@ -2,8 +2,6 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const {verifyAccessToken} = require("../utils/jwt.utils")
 
-
-
 const authIsAdminMiddleware = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
 

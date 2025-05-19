@@ -67,7 +67,7 @@ class OrderService {
     }
   }
 
-  static async updateOderStatus(orderId, newStatus) {
+  static async updateOrderStatus(orderId, newStatus) {
     const allowedStatuses = [
       "PENDING",
       "IN_PREPARATION",
@@ -123,6 +123,23 @@ class OrderService {
       include: { OrderItem: { include: { product: true } } },
     });
     return order;
+  }
+
+  static async getAllOrders(){
+    try {
+      const orders = await prisma.order.findMany({
+        include: {
+          OrderItem: { include: {product: true}},
+          user: true,
+        },
+        orderBy: { createdAt: "desc"}
+      });
+      return orders
+      
+    } catch (error) {
+      throw new AppError(error.message || "Error fetching all Orders", 500)
+      
+    }
   }
 }
 
