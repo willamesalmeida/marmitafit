@@ -11,6 +11,7 @@ const userRoutes = require("./routes/user.routes.js");
 const productRoutes = require("./routes/product.routes.js");
 const orderRoutes = require("./routes/order.routes.js");
 const cartRoutes = require("./routes/cart.routes.js");
+const adminRoutes = require("./routes/admin.routes.js")
 
 //import middleware handle error
 const errorHandlerMiddleware = require("./middlewares/errorHandler.middleware.js");
@@ -38,6 +39,7 @@ app.use(userRoutes); //add users routes
 app.use(productRoutes); //add product routes
 app.use(orderRoutes); //add order routes
 app.use(cartRoutes); //add cart routes
+app.use(adminRoutes) //add admin routes
 
 app.get("/", (req, res) => {
   res.send("API funcionando");

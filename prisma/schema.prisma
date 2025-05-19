@@ -51,9 +51,9 @@ model Product {
   updatedAt   DateTime @default(now())
 
   OrderItem OrderItem[]
+  CartItem  CartItem[]
 
-  user     User       @relation(fields: [userId], references: [id])
-  CartItem CartItem[]
+  user User @relation(fields: [userId], references: [id])
 }
 
 model RefreshToken {
@@ -105,7 +105,7 @@ model Cart {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  items CartItem[]
+  CartItem CartItem[]
 
   user User @relation(fields: [userId], references: [id])
 }

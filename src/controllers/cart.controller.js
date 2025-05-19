@@ -89,7 +89,6 @@ class CartController {
   static async checkout(req, res, next) {
     try {
       const userId = req.user.userId;
-
       const order = await CartService.checkoutCart(userId);
 
       res.status(200).json({

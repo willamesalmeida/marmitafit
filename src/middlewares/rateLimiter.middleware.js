@@ -13,7 +13,11 @@ const limiter = ratelimit({
 const speedLimiter = slowDown({
   windowMs: 15 * 60 * 1000, //15minutes
   delayAfter: 50, // after 50 requests, its starts adding 500ms delay
-  delayMs: 500, // define delay value
+  // define delay value:
+  delayMs: (used, req) => {
+    const delayAfter = req.slowDown.limit;
+    return (used - delayAfter) * 500;
+  }, 
 });
 
 module.exports = {
