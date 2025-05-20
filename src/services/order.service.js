@@ -150,8 +150,13 @@ class OrderService {
     Ex: 
       http://localhost:3333/admin/orders?startDate=2025-05-01&endDate=2025-05-31
     Ex: 
-      http://localhost:3333/admin/orders?status=pending&startDate=2025-05-01&endDate=2025-05-31 */
+      http://localhost:3333/admin/orders?status=pending&startDate=2025-05-01&endDate=2025-05-31 
       
+      
+    Ex. using pagination
+      http://localhost:3333/admin/orders?page=1&limit=10&startDate=2025-05-01&endDate=2025-05-31
+      */
+
     try {
       // creates an object to store the filtering conditions
       const whereConditions = {};
@@ -176,6 +181,14 @@ class OrderService {
           whereConditions.createdAt.lte = new Date(filter.endDate);
         }
       }
+      //parameters to pagination: page and limit
+      const page = filter.page ? Number(filter.page) : 1;
+      const limit = filter.limit ? Number(filter.limit) : 10;
+      const skip = (page - 1) * limit;
+
+      const totalOrders = await prisma.order.count({
+        where: whereConditions,
+      });
 
       const orders = await prisma.order.findMany({
         where: whereConditions,
@@ -184,9 +197,19 @@ class OrderService {
           user: true,
         },
         orderBy: { createdAt: "desc" },
+        skip: skip,
+        take: limit,
       });
 
-      return orders;
+      return {
+        orders,
+        pagination: {
+          page,
+          limit,
+          totalOrders,
+          totalPages: Math.ceil(totalOrders / limit),
+        },
+      };
     } catch (error) {
       throw new AppError(
         error.message || "Error fetching filtered orders",
