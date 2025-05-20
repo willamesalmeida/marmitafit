@@ -6,6 +6,6 @@ const { verifyTokenMiddleware, authIsAdminMiddleware } = require("../middlewares
 
 const router = express.Router()
 
-router.get("/admin/order", verifyTokenMiddleware, authIsAdminMiddleware, AdminOrderController.listAllOrders)
+router.get("/admin/orders", verifyTokenMiddleware, authIsAdminMiddleware, AdminOrderController.listAllOrders)
 
 module.exports = router
