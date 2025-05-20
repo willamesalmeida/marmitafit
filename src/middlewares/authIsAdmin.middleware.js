@@ -8,7 +8,7 @@ const authIsAdminMiddleware = (req, res, next) => {
   if (!token) {
     return res
       .status(401)
-      .json({ message: "Access denied. No token provided." });
+      .json({ message: "Access denied. No token provided!." });
   }
 
   try {
@@ -20,7 +20,7 @@ const authIsAdminMiddleware = (req, res, next) => {
     if (!decoded || typeof decoded.isAdmin === "undefined" || !decoded.isAdmin ) {
       return res.status(401).json({
         message:
-          "Access denied! You don't have permission, only administrators can register a product",
+          "Access denied! You don't have permission, only administrators!",
       });
     }
 

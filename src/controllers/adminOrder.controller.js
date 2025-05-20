@@ -1,14 +1,19 @@
-const OrderService = require("../services/order.service")
+const OrderService = require("../services/order.service");
 
 class AdminOrderController {
-  static async listAllOrders(req, res, next){
+  static async listAllOrders(req, res, next) {
     try {
-      const orders = await OrderService.getAllOrders();
+      const filter = req.query || {};
+
+      const orders = Object.keys(filter).length === 0 ? await OrderService.getAllOrders() : await OrderService.getFilteredOrders(filter)
+
+      res.status(200).json({ orders });
+      /* const orders = await OrderService.getAllOrders();
       res.status(200).json({
         orders
-      })
+      }) */
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 }

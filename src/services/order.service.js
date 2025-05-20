@@ -6,7 +6,6 @@ class OrderService {
   // Creates a user-conditioned order
   static async createOrder(userId, items) {
     try {
-     
       //verify if item if pass theougt de function params
       if (!userId || !items || items.length === 0) {
         throw new AppError("User ID is required to create an order", 400);
@@ -47,7 +46,6 @@ class OrderService {
         include: { OrderItem: { include: { product: true } } },
       });
       return order;
-
     } catch (error) {
       throw new AppError(error.message || "Error creating order!", 500);
     }
@@ -94,7 +92,7 @@ class OrderService {
     if (!currentOrder.status) {
       throw new AppError("Order status is undefined", 400);
     }
-    
+
     // Define the transition rules: for each status, which statuses are allowed for transition
     const allowedTransitions = {
       PENDING: ["IN_PREPARATION", "CANCELLED"],
@@ -104,8 +102,8 @@ class OrderService {
       DELIVERED: [],
       CANCELLED: [],
     };
-    
-    const currentStatus = currentOrder.status.toUpperCase()
+
+    const currentStatus = currentOrder.status.toUpperCase();
     // Verifica se a transição a partir do status atual para o novo status é permitida
     if (!allowedTransitions[currentStatus]?.includes(newStatus)) {
       throw new AppError(
@@ -125,20 +123,75 @@ class OrderService {
     return order;
   }
 
-  static async getAllOrders(){
+  static async getAllOrders() {
     try {
       const orders = await prisma.order.findMany({
         include: {
-          OrderItem: { include: {product: true}},
+          OrderItem: { include: { product: true } },
           user: true,
         },
-        orderBy: { createdAt: "desc"}
+        orderBy: { createdAt: "desc" },
       });
-      return orders
-      
+      return orders;
     } catch (error) {
-      throw new AppError(error.message || "Error fetching all Orders", 500)
+      throw new AppError(error.message || "Error fetching all Orders", 500);
+    }
+  }
+
+  // captures orders through filters
+  static async getFilteredOrders(filter) {
+    /* 
+    This filter comes from within the url on the endpoint   
+    
+    Ex:
+      http://localhost:3333/admin/orders?status=in_preparation
+    Ex:
+      http://localhost:3333/admin/orders?userId=3232965
+    Ex: 
+      http://localhost:3333/admin/orders?startDate=2025-05-01&endDate=2025-05-31
+    Ex: 
+      http://localhost:3333/admin/orders?status=pending&startDate=2025-05-01&endDate=2025-05-31 */
       
+    try {
+      // creates an object to store the filtering conditions
+      const whereConditions = {};
+
+      // filter by status (PENDING, IN_PREPARATION..)
+      if (filter.status) {
+        whereConditions.status = filter.status.toUpperCase();
+      }
+
+      // filter by user ID if provided
+      if (filter.userId) {
+        whereConditions.userId = filter.userId;
+      }
+
+      // Filter by dates: startDate and endDate for the createdAt field
+      if (filter.startDate || filter.endDate) {
+        whereConditions.createdAt = {};
+        if (filter.startDate) {
+          whereConditions.createdAt.gte = new Date(filter.startDate);
+        }
+        if (filter.endDate) {
+          whereConditions.createdAt.lte = new Date(filter.endDate);
+        }
+      }
+
+      const orders = await prisma.order.findMany({
+        where: whereConditions,
+        include: {
+          OrderItem: { include: { product: true } },
+          user: true,
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      return orders;
+    } catch (error) {
+      throw new AppError(
+        error.message || "Error fetching filtered orders",
+        500
+      );
     }
   }
 }
