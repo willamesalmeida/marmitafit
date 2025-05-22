@@ -7,7 +7,7 @@ const storage = new CloudinaryStorage({
   params: async (req, file) => {
     let folderName = "uploads";
 
-    if (req.route.path === "/users/profile-image") {
+    if (req.route.path.includes("/users/profile")) {
       folderName = "profile_images";
     } else if (req.route.path.includes("/products")) {
       folderName = "product_images";
@@ -17,9 +17,9 @@ const storage = new CloudinaryStorage({
       folder: folderName,
       allowedFormats: ["jpeg", "png", "jpg"],
       transformation: [{width: 500, height:500, crop:"limit"}],
-      public_id: `${Date.now()}-${file.originalname},`
+      // public_id: `${Date.now()}-${file.originalname},`
     }
-
+    
   },
 
   /* 

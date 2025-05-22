@@ -16,15 +16,10 @@ router.post("/login", /* accountSignIn, */ UserController.loginUser);
 router.post("/logout", UserController.logout);
 router.post("/refresh", UserController.userRefreshToken);
 router.post("/reset-password/request", UserController.requestPasswordReset);
-router.post(
-  "/reset-password",
-  /* passwordReset, */ UserController.resetPassword
-);
+router.post("/reset-password",/* passwordReset, */ UserController.resetPassword);
 
-router.patch(
-  "/users/profile-image",
-  verifyTokenMiddleware,
-  upload.single("profileImage", UserController.updateProfileImage)
-);
+// update phone number and address
+router.patch("/users/profile", verifyTokenMiddleware, upload.single("profileImage"), UserController.updateUserProfile);
+
 
 module.exports = router;
