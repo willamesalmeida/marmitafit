@@ -219,6 +219,19 @@ class UserController {
       next(error);
     }
   }
+
+  static async updateProfileImage(req, res, next) {
+    try {
+      const userId = req.user.userId;
+      const file = req.file;
+
+      const updateUser = await UserService.updateProfileImage(userId, file)
+
+      res.status(200).json({message: "Profile image updated successfully!", user: updateUser})
+    } catch (error) {
+      next(error)
+    }
+  }
 }
 
 module.exports = UserController;
