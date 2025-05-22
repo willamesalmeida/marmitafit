@@ -143,6 +143,35 @@ class UserService {
       );
     }
   }
+
+  static async updateProfileImage(userId, file){
+    try {
+      if(!userId) {
+        throw new AppError("User ID is required!", 400)
+      }
+      if(!file) {
+        throw new AppError("Image file is required!", 400)
+      }
+
+      const user = await prisma.user.findUnique({ where: {id: userId}})
+      if(!user) {
+        throw new AppError("User not found!", 404)
+      }
+      // saves URL and the image ID on de database
+      const updateUser = await prisma.user.update({
+        where: { id: userId},
+        data: {
+          profileImageUrl: file.path,
+          profilePublicId: file.filename,
+        }
+      })
+
+      return updateUser;
+    } catch (error) {
+      throw new AppError(error.message || "Error updating profile", 500)
+      
+    }
+  }
 }
 
 module.exports = UserService;
