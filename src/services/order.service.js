@@ -161,16 +161,34 @@ class OrderService {
       // creates an object to store the filtering conditions
       const whereConditions = {};
 
+      const allowedStatuses = ["PENDING", "IN_PREPARATION", "READY_FOR_DELIVERY", "ON_THE_WAY", "DELIVERED", "CANCELLED"]
+
+      //validate status
+      if(filter.status && !allowedStatuses.includes(filter.status.toUpperCase())){
+        throw new AppError(`Invalid status '${filter.status}'. Allowed values: ${allowedStatuses.join(", ")}`, 400)
+      }
+
       // filter by status (PENDING, IN_PREPARATION..)
-      if (filter.status) {
+      if (filter.status ) {
         whereConditions.status = filter.status.toUpperCase();
+      }
+      //validate userId
+      if(filter.userId && isNaN(filter.userId)){
+        throw new AppError("Invalid userId. It must be a numeric value.", 400);
       }
 
       // filter by user ID if provided
       if (filter.userId) {
         whereConditions.userId = filter.userId;
       }
+      //validate Dates
+      if(filter.startDate && isNaN(Date.parse(filter.startDate))){
+        throw new AppError("Invalid startDate format. Use 'YYYY-MM-DD'.", 400);
+      }
 
+      if(filter.endDate && isNaN(Date.parse(filter.endDate))){
+        throw new AppError("Invalide endDate format. Use 'YYYY-MM-DD'.", 400)
+      }
       // Filter by dates: startDate and endDate for the createdAt field
       if (filter.startDate || filter.endDate) {
         whereConditions.createdAt = {};
@@ -190,7 +208,12 @@ class OrderService {
         where: whereConditions,
       });
 
+      if(totalOrders === 0){
+        throw new AppError("No orders found matching the criteria.", 404)
+      }
+
       const orders = await prisma.order.findMany({
+        // Search the database where the condition matches the filter conditions passed in the search
         where: whereConditions,
         include: {
           OrderItem: { include: { product: true } },
@@ -211,9 +234,9 @@ class OrderService {
         },
       };
     } catch (error) {
-      throw new AppError(
-        error.message || "Error fetching filtered orders",
-        500
+      throw new AppError( error.message, error.statusCode || 500
+       /*  error.message, error.statusCode || "Error fetching filtered orders",
+        500 */
       );
     }
   }

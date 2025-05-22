@@ -12,9 +12,7 @@ class AdminOrderController {
       res.status(200).json({ orders }); */
 
       const orders = await OrderService.getFilteredOrders(filter);
-      res.status(200).json({
-        orders
-      }) 
+      res.status(200).json(orders) 
     } catch (error) {
       next(error);
     }
