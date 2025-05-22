@@ -78,7 +78,10 @@ class UserController {
       /*  if(token.error){
         return res.status(400).json({ message: "Invalid credentials", error });
       } */
-      console.log("accessToken to teste (esse console esta no usercontroller): ", accessToken)
+      console.log(
+        "accessToken to teste (esse console esta no usercontroller): ",
+        accessToken
+      );
       res
         .status(200)
         .json({ message: "Login successful!", accessToken, refreshToken });
@@ -143,7 +146,7 @@ class UserController {
 
       //verify token in request
       // const decoded = verifyResetToken(token);
-      const decoded = verifyAccessToken(token)
+      const decoded = verifyAccessToken(token);
 
       //if false response the token is invalid or expired
       if (decoded.error) {
@@ -171,14 +174,14 @@ class UserController {
       if (!refreshToken) {
         throw new AppError("Refresh token not provided", 401);
       }
-      
+
       //Search for refresh token in database
       const storedToken = await RefreshTokenService.findRefreshToken(
         refreshToken
       );
       console.log("storedToken", storedToken);
       if (!storedToken) {
-        console.log("log do storedtoken")
+        console.log("log do storedtoken");
         throw new AppError("Invalid refresh token", 403);
       }
       // Verify if the refresh token is expired
@@ -220,18 +223,37 @@ class UserController {
     }
   }
 
-  static async updateProfileImage(req, res, next) {
+  static async updateUserProfile(req, res, next) {
+    try {
+      const userId = req.user.userId;
+      const updates = req.body;
+      const file = req.file
+
+      const updatedUser = await UserService.updateUserProfile(userId, updates, file)
+
+      res
+        .status(200)
+        .json({ message: "Profile updated successfully!", user: updatedUser });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /* static async updateProfileImage(req, res, next) {
     try {
       const userId = req.user.userId;
       const file = req.file;
 
-      const updateUser = await UserService.updateProfileImage(userId, file)
+      const updateUser = await UserService.updateProfileImage(userId, file);
 
-      res.status(200).json({message: "Profile image updated successfully!", user: updateUser})
+      res.status(200).json({
+        message: "Profile image updated successfully!",
+        user: updateUser,
+      });
     } catch (error) {
-      next(error)
+      next(error);
     }
-  }
+  } */
 }
 
 module.exports = UserController;

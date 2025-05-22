@@ -81,9 +81,8 @@ class UserService {
         process.env.JWT_SECRET_KEY,
         { expiresIn: "1h" }
       );
-    
+
       return { message: "Login successful!", token, user: userDTO(userBd) };
-      
     } catch (error) {
       throw new AppError(
         error.message || "Error during login!",
@@ -135,7 +134,6 @@ class UserService {
       });
 
       return { message: "Password updated successfully!" };
-      
     } catch (error) {
       throw new AppError(
         error.message || "Error updating password!",
@@ -144,34 +142,71 @@ class UserService {
     }
   }
 
-  static async updateProfileImage(userId, file){
+  static async updateUserProfile(userId, updates, file) {
     try {
-      if(!userId) {
-        throw new AppError("User ID is required!", 400)
-      }
-      if(!file) {
-        throw new AppError("Image file is required!", 400)
+      if (!userId) {
+        throw new AppError("User ID is required!", 400);
       }
 
-      const user = await prisma.user.findUnique({ where: {id: userId}})
-      if(!user) {
-        throw new AppError("User not found!", 404)
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+      });
+
+      if (!user) {
+        throw new AppError("User not found!", 404);
+      }
+      // Data for update user informations
+      const updateUserData = await prisma.user.update({
+        where: { id: userId },
+        data: {
+          phone: updates.phone || user.phone,
+          address: updates.address || user.address,
+        },
+      });
+
+      // If there is an image file, add it to the update
+      if (file) {
+        updateUserData.profileImageUrl = file.path;
+        updateUserData.profilePublicId = file.filename;
+      }
+
+      const updatedUser = await prisma.user.update({
+        where: { id: userId },
+        data: updateUserData,
+      });
+      return updatedUser;
+    } catch (error) {
+      throw new AppError(error.message || "Error updating profile!", 500);
+    }
+  }
+
+  /* static async updateProfileImage(userId, file) {
+    try {
+      if (!userId) {
+        throw new AppError("User ID is required!", 400);
+      }
+      if (!file) {
+        throw new AppError("Image file is required!", 400);
+      }
+
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      if (!user) {
+        throw new AppError("User not found!", 404);
       }
       // saves URL and the image ID on de database
       const updateUser = await prisma.user.update({
-        where: { id: userId},
+        where: { id: userId },
         data: {
           profileImageUrl: file.path,
           profilePublicId: file.filename,
-        }
-      })
+        },
+      });
 
       return updateUser;
     } catch (error) {
-      throw new AppError(error.message || "Error updating profile", 500)
-      
+      throw new AppError(error.message || "Error updating profile", 500);
     }
-  }
+  } */
 }
 
 module.exports = UserService;
