@@ -7,6 +7,7 @@ const {
 } = require("../middlewares/authIsAdmin.middleware");
 
 const upload = require("../middlewares/upload.middleware");
+const { validateProfileUpdate } = require("../validator/user.validation");
 
 /* const router = express.Router() */
 const router = Router();
@@ -19,7 +20,9 @@ router.post("/reset-password/request", UserController.requestPasswordReset);
 router.post("/reset-password",/* passwordReset, */ UserController.resetPassword);
 
 // update phone number and address
-router.patch("/users/profile", verifyTokenMiddleware, upload.single("profileImage"), UserController.updateUserProfile);
+router.patch("/users/profile", verifyTokenMiddleware, upload.single("profileImage"),validateProfileUpdate, UserController.updateUserProfile);
 
+//remove profile image
+router.delete("/users", verifyTokenMiddleware, UserController.deleteUser)
 
 module.exports = router;

@@ -2,6 +2,7 @@ const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcrypt");
 require("dotenv").config();
 const AppError = require("../utils/errorHandler.util");
+cloudinary = require("../config/cloudinary");
 
 //import JWT autenticate
 const jwt = require("jsonwebtoken");
@@ -42,7 +43,10 @@ class UserService {
         },
       });
 
-      return { message: "User registered successfully!", user: newUser };
+      return {
+        message: "User registered successfully!",
+        user: userDTO(newUser),
+      };
     } catch (error) {
       throw new AppError(
         error.message || "Error registering user!",
@@ -107,8 +111,9 @@ class UserService {
       if (!user) {
         throw new AppError("User not found!", 404);
       }
+      console.log("getUserByEmail", user);
 
-      return { message: "User found!", user };
+      return { message: "User found!", user: userDTO(user) };
     } catch (error) {
       throw new AppError(
         error.message || "Error fetching user!",
@@ -174,39 +179,71 @@ class UserService {
         where: { id: userId },
         data: updateUserData,
       });
-      return updatedUser;
+
+      return {
+        message: "Profile updated successfully!",
+        user: userDTO(updatedUser),
+      };
     } catch (error) {
       throw new AppError(error.message || "Error updating profile!", 500);
     }
   }
 
-  /* static async updateProfileImage(userId, file) {
-    try {
-      if (!userId) {
-        throw new AppError("User ID is required!", 400);
-      }
-      if (!file) {
-        throw new AppError("Image file is required!", 400);
-      }
-
-      const user = await prisma.user.findUnique({ where: { id: userId } });
-      if (!user) {
-        throw new AppError("User not found!", 404);
-      }
-      // saves URL and the image ID on de database
-      const updateUser = await prisma.user.update({
-        where: { id: userId },
-        data: {
-          profileImageUrl: file.path,
-          profilePublicId: file.filename,
-        },
-      });
-
-      return updateUser;
-    } catch (error) {
-      throw new AppError(error.message || "Error updating profile", 500);
+  static async removeProfileImage(userId) {
+    if (!userId) {
+      throw new AppError("User ID is required!", 400);
     }
-  } */
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { profilePublicId: true, profileImageUrl: true },
+    });
+
+    if (!user) {
+      throw new AppError("user not Found!", 404);
+    }
+
+    if (!user.profilePublicId) {
+      return user;
+    }
+
+    try {
+      const { result } = await cloudinary.uploader.destroy(
+        user.profilePublicId
+      );
+
+      if (result.result !== "ok" && result.result !== "not_found") {
+        console.warn(
+          `Cloudinary.destroy returned unexpected result: ${result}`
+        );
+      }
+    } catch (err) {
+      console.error("Error removing profile image from cloudinary: ", err);
+    }
+    // updtae user to remove image profile
+    await prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        profileImageUrl: null,
+        profilePublicId: null,
+      },
+    });
+  }
+  catch(error) {
+    throw new AppError(error.message || "Error removing profile image!", 500);
+  }
+
+  static async deleteUser(userId) {
+    await this.removeProfileImage(userId);
+
+    await prisma.user.delete({
+      where: { id: userId },
+    });
+
+    return { message: "User deleted successfully!" };
+  }
 }
 
 module.exports = UserService;

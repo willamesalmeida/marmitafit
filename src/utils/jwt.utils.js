@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
-const ACESS_TOKEN_EXPIRES = "1h";
+const ACESS_TOKEN_EXPIRES = "10m";
 const REFRESH_TOKEN_EXPIRES = "2m";
 const ACCESS_RESET_TOKEN_EXPIRES = "15m";
 const AppError = require("../utils/errorHandler.util");
