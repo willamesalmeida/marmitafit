@@ -6,6 +6,8 @@ const rules = {
   email: Joi.string().email().required(),
   password: Joi.string().min(6).max(30).pattern(new RegExp('^[a-zA-Z0-9]{6,30}$')).required(),
   confirmPassword: Joi.string().valid(Joi.ref("password")).required(),
+  phone: Joi.string().pattern(/^(\+\d{1,3}\s?)?(\(?\d{2,3}\)?[\s-]?)?\d{4,5}[-]?\d{4}$/).optional(),
+  address: Joi.string().trim().min(5).max(100).optional()
 };
 
 const accountSignIn = (req, res, next) => {
@@ -95,4 +97,29 @@ const passwordReset = (req, res, next) => {
   next();
 };
 
-module.exports = { accountSignUp, accountSignIn, passwordReset };
+const validateProfileUpdate = (req, res, next) => {
+  const {phone, address } = req.body;
+
+  const schema = Joi.object({
+    phone: rules.phone,
+    address: rules.address,
+  })
+
+  const option ={ abortEarly: false }
+
+  const { error } = schema.validate({
+    phone,
+    address,
+  }, 
+option);
+
+if(error) {
+  return res.status(400).json({
+    message: "Validation error",
+    details: error.details.map((detail) => detail.message)
+  })
+}
+next()
+}
+
+module.exports = { accountSignUp, accountSignIn, passwordReset, validateProfileUpdate };

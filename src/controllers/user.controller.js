@@ -18,7 +18,7 @@ const {
 } = require("../utils/jwt.utils");
 
 //file with functions needed for the controller
-const RefreshTokenService = require("../services/refreshToken.services");
+const RefreshTokenService = require("../services/refreshToken.service");
 
 //library to management date
 const dayjs = require("dayjs");
@@ -82,9 +82,12 @@ class UserController {
         "accessToken to teste (esse console esta no usercontroller): ",
         accessToken
       );
-      res
-        .status(200)
-        .json({ message: "Login successful!", accessToken, refreshToken });
+      res.status(200).json({
+        message: "Login successful!",
+        user,
+        accessToken,
+        refreshToken,
+      });
     } catch (error) {
       next(error);
       // res.status(401).json({ message: "Login error", error });
@@ -205,7 +208,38 @@ class UserController {
       next(error);
     }
   }
-  // Endpoint for logout that revokes the refresh token
+
+  static async updateUserProfile(req, res, next) {
+    try {
+      const userId = req.user.userId;
+      const updates = req.body;
+      const file = req.file;
+
+      const updatedUser = await UserService.updateUserProfile(
+        userId,
+        updates,
+        file
+      );
+
+      res
+        .status(200)
+        .json({ message: "Profile updated successfully!", user: updatedUser });
+    } catch (error) {
+      next(error);
+    }
+  }
+  static async deleteUser(req, res, next) {
+    try {
+      const userId = req.user.userId;
+      const result = await UserService.deleteUser(userId);
+
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+    // Endpoint for logout that revokes the refresh token
   static async logout(req, res, next) {
     try {
       const { refreshToken } = req.body;
@@ -222,38 +256,6 @@ class UserController {
       next(error);
     }
   }
-
-  static async updateUserProfile(req, res, next) {
-    try {
-      const userId = req.user.userId;
-      const updates = req.body;
-      const file = req.file
-
-      const updatedUser = await UserService.updateUserProfile(userId, updates, file)
-
-      res
-        .status(200)
-        .json({ message: "Profile updated successfully!", user: updatedUser });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  /* static async updateProfileImage(req, res, next) {
-    try {
-      const userId = req.user.userId;
-      const file = req.file;
-
-      const updateUser = await UserService.updateProfileImage(userId, file);
-
-      res.status(200).json({
-        message: "Profile image updated successfully!",
-        user: updateUser,
-      });
-    } catch (error) {
-      next(error);
-    }
-  } */
 }
 
 module.exports = UserController;
