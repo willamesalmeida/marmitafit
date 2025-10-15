@@ -27,7 +27,7 @@ model User {
   profileImageUrl String?
   profilePublicId String?
 
-  RefreshToken RefreshToken?
+  RefreshToken RefreshToken[]
   Product      Product[]
   Order        Order[]
   Cart         Cart?
@@ -63,8 +63,9 @@ model Product {
 
 model RefreshToken {
   id        String   @id @default(uuid())
-  userId    String   @unique
+  userId    String
   token     String   @unique @db.VarChar(512)
+  deviceId  String? // ← esse campo precisa estar aqui
   expiresIn DateTime
   createdAt DateTime @default(now())
   isRevoked Boolean  @default(false)
