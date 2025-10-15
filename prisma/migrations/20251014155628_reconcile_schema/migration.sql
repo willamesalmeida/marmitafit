@@ -1,0 +1,1 @@
+-- Reconcile migration: no schema changes required because database already matches schema

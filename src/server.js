@@ -2,6 +2,7 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const { cleanExpiredTokens } = require("./services/refreshToken.service.js");
 
 //import database connection
 const database = require("./config/database.js");
@@ -11,7 +12,7 @@ const userRoutes = require("./routes/user.routes.js");
 const productRoutes = require("./routes/product.routes.js");
 const orderRoutes = require("./routes/order.routes.js");
 const cartRoutes = require("./routes/cart.routes.js");
-const adminRoutes = require("./routes/admin.routes.js")
+const adminRoutes = require("./routes/admin.routes.js");
 
 //import middleware handle error
 const errorHandlerMiddleware = require("./middlewares/errorHandler.middleware.js");
@@ -39,7 +40,7 @@ app.use(userRoutes); //add users routes
 app.use(productRoutes); //add product routes
 app.use(orderRoutes); //add order routes
 app.use(cartRoutes); //add cart routes
-app.use(adminRoutes) //add admin routes
+app.use(adminRoutes); //add admin routes
 
 app.get("/", (req, res) => {
   res.send("API funcionando");
@@ -96,6 +97,15 @@ app.listen(PORT, async () => {
     console.log(`http://${HOST}:${PORT}`);
     // gerador de secretekey para jwt
     // console.log(require('crypto').randomBytes(32).toString('hex'))
+    setInterval(async () => {
+      try {
+        await cleanExpiredTokens();
+        console.log("Expired refresh tokens cleaned up");
+      } catch (error) {
+        console.error("Error cleaning expired tokens:", error);
+      }
+    }, 60 * 60 * 1000);
+     // Run every hour
   } catch (error) {
     console.error("Error to syncronized to database:", error);
   }

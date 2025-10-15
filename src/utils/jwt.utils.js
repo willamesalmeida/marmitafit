@@ -1,9 +1,10 @@
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const ACESS_TOKEN_EXPIRES = "10m";
-const REFRESH_TOKEN_EXPIRES = "2m";
+const REFRESH_TOKEN_EXPIRES = "7d";
 const ACCESS_RESET_TOKEN_EXPIRES = "15m";
 const AppError = require("../utils/errorHandler.util");
+const { v4: uuidv4 } = require("uuid");
 
 //generate access token
 const generateAccessToken = (payload) => {
@@ -16,6 +17,8 @@ const generateAccessToken = (payload) => {
 const generateRefreshToken = (payload) => {
   return jwt.sign(payload, process.env.JWT_REFRESH_SECRET_KEY, {
     expiresIn: REFRESH_TOKEN_EXPIRES,
+    jwtid: uuidv4(), // Generate a unique identifier for the token
+    //rastreable
   });
 };
 
@@ -28,9 +31,10 @@ const verifyAccessToken = (token) => {
 };
 const verifyRefreshToken = (token) => {
   try {
-    return jwt.verify(token, process.env.JWT_SECRET_KEY);
+   return jwt.verify(token, process.env.JWT_REFRESH_SECRET_KEY);
+    
   } catch (error) {
-    throw new AppError("Invalid or expired refresh token!", 400);
+    throw new AppError("Invalid or expired refresh token!", 400)
   }
 };
 

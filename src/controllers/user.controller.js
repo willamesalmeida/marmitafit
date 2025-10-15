@@ -49,39 +49,32 @@ class UserController {
       }); */
     }
   }
-  // login the user
+
   static async loginUser(req, res, next) {
     try {
       const { email, password } = req.body;
 
-      // crete a token
+      //1 authenticates the user
       const { user } = await UserService.authenticateUser(email, password);
 
-      // generate access token and refresh token
+      //2 generate access token and refresh token
       const accessToken = generateAccessToken({
         userId: user.id,
         isAdmin: user.isAdmin,
       });
-
       const refreshToken = generateRefreshToken({ userId: user.id });
 
-      // define data do expire refreshToken
-      const expiresIn = dayjs().add(2, "minute").toDate();
-      // const expiresIn = new Date(Date.now() + 7 * 24 * 60 * 60 * 100);
+      //3 defina data to expire refreshToken
+      const expiresIn = dayjs().add(7, "days").toDate();
 
+      //3 save refresh token in database
       await RefreshTokenService.saveRefreshToken(
         user.id,
         refreshToken,
         expiresIn
       );
 
-      /*  if(token.error){
-        return res.status(400).json({ message: "Invalid credentials", error });
-      } */
-      console.log(
-        "accessToken to teste (esse console esta no usercontroller): ",
-        accessToken
-      );
+      //5 response to client
       res.status(200).json({
         message: "Login successful!",
         user,
@@ -89,10 +82,54 @@ class UserController {
         refreshToken,
       });
     } catch (error) {
-      next(error);
-      // res.status(401).json({ message: "Login error", error });
+      next(Error);
     }
   }
+
+  // login the user
+  // static async loginUser(req, res, next) {
+  //   try {
+  //     const { email, password } = req.body;
+
+  //     // crete a token
+  //     const { user } = await UserService.authenticateUser(email, password);
+
+  //     // generate access token and refresh token
+  //     const accessToken = generateAccessToken({
+  //       userId: user.id,
+  //       isAdmin: user.isAdmin,
+  //     });
+
+  //     const refreshToken = generateRefreshToken({ userId: user.id });
+
+  //     // define data do expire refreshToken
+  //     const expiresIn = dayjs().add(2, "minute").toDate();
+  //     // const expiresIn = new Date(Date.now() + 7 * 24 * 60 * 60 * 100);
+
+  //     await RefreshTokenService.saveRefreshToken(
+  //       user.id,
+  //       refreshToken,
+  //       expiresIn
+  //     );
+
+  //     /*  if(token.error){
+  //       return res.status(400).json({ message: "Invalid credentials", error });
+  //     } */
+  //     console.log(
+  //       "accessToken to teste (esse console esta no usercontroller): ",
+  //       accessToken
+  //     );
+  //     res.status(200).json({
+  //       message: "Login successful!",
+  //       user,
+  //       accessToken,
+  //       refreshToken,
+  //     });
+  //   } catch (error) {
+  //     next(error);
+  //     // res.status(401).json({ message: "Login error", error });
+  //   }
+  // }
   //request to reset password
   static async requestPasswordReset(req, res, next) {
     try {
@@ -172,25 +209,25 @@ class UserController {
     try {
       const { refreshToken } = req.body;
 
-      console.log("REFRESHTOKEN: ", refreshToken);
-
       if (!refreshToken) {
         throw new AppError("Refresh token not provided", 401);
+      }
+
+      // verity if the refresh token obteined a payload or error
+      const decoded = await verifyRefreshToken(refreshToken);
+      if(decoded.error){
+        throw new AppError(decode.error, 403);
       }
 
       //Search for refresh token in database
       const storedToken = await RefreshTokenService.findRefreshToken(
         refreshToken
       );
-      console.log("storedToken", storedToken);
-      if (!storedToken) {
-        console.log("log do storedtoken");
-        throw new AppError("Invalid refresh token", 403);
+      if (!storedToken || storedToken.isRevoked) {
+        throw new AppError("Invalid or revoked refresh token", 403);
       }
-      // Verify if the refresh token is expired
-      verifyRefreshToken(refreshToken);
 
-      //verify if the refresh token stored is expired
+      /* //verify if the refresh token stored is expired
       if (dayjs(storedToken.expiresIn).isBefore(dayjs())) {
         throw new AppError("Refresh token expired", 403);
       }
@@ -201,6 +238,7 @@ class UserController {
       //generate a new access token
       const newAccessToken = generateAccessToken({
         userId: storedToken.userId,
+        isAdmin: decoded.isAdmin,
       });
 
       res.status(200).json({ accessToken: newAccessToken });
@@ -239,7 +277,7 @@ class UserController {
     }
   }
 
-    // Endpoint for logout that revokes the refresh token
+  // Endpoint for logout that revokes the refresh token
   static async logout(req, res, next) {
     try {
       const { refreshToken } = req.body;
