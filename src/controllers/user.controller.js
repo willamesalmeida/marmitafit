@@ -52,7 +52,7 @@ class UserController {
 
   static async loginUser(req, res, next) {
     try {
-      const { email, password } = req.body;
+      const { email, password, deviceId } = req.body;
 
       //1 authenticates the user
       const { user } = await UserService.authenticateUser(email, password);
@@ -71,7 +71,8 @@ class UserController {
       await RefreshTokenService.saveRefreshToken(
         user.id,
         refreshToken,
-        expiresIn
+        expiresIn,
+        deviceId
       );
 
       //5 response to client
@@ -215,7 +216,7 @@ class UserController {
 
       // verity if the refresh token obteined a payload or error
       const decoded = await verifyRefreshToken(refreshToken);
-      if(decoded.error){
+      if (decoded.error) {
         throw new AppError(decode.error, 403);
       }
 
@@ -241,8 +242,26 @@ class UserController {
         isAdmin: decoded.isAdmin,
       });
 
-      res.status(200).json({ accessToken: newAccessToken });
-    } catch (error) {
+      const newRefreshToken = generateRefreshToken({
+        userId: storedToken.userId,
+      });
+      //Define new expiration date for refresh token
+      const expiresIn = dayjs().add(7, "days").toDate();
+      //save the new refresh token in database
+      await RefreshTokenService.saveRefreshToken(
+        storedToken.userId,
+        newRefreshToken,
+        expiresIn,
+        storedToken.deviceId
+      );
+      await RefreshTokenService.revokedRefreshToken(refreshToken);
+
+      //response to client
+      res
+        .status(200)
+        .json({ accessToken: newAccessToken, refreshToken: newRefreshToken });
+    
+      } catch (error) {
       next(error);
     }
   }
