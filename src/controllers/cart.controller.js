@@ -89,7 +89,13 @@ class CartController {
   static async checkout(req, res, next) {
     try {
       const userId = req.user.userId;
-      const order = await CartService.checkoutCart(userId);
+
+      const {addressId} = req.body; 
+      if(!addressId){
+        throw new AppError("Address ID is required for checkout", 400);
+      }
+
+      const order = await CartService.checkoutCart(userId, addressId);
 
       res.status(200).json({
         message: "Checkout successful!",
