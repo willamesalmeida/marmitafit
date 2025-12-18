@@ -1,5 +1,12 @@
+//constollers
+const AddressController = require("../controllers/address.controller");
 const UserController = require("../controllers/user.controller");
+
+//validators  
+const { validateAddress } = require("../validator/address.validation");
+
 /* const express = require("express") */
+
 const { Router } = require("express");
 const {
   accountSignIn,
@@ -13,6 +20,8 @@ const {
 const upload = require("../middlewares/upload.middleware");
 const { validateProfileUpdate } = require("../validator/user.validation");
 const Joi = require("joi");
+
+
 
 /* const router = express.Router() */
 const router = Router();
@@ -52,5 +61,10 @@ router.patch(
 
 //remove profile image
 router.delete("/users", verifyTokenMiddleware, UserController.deleteUser);
+
+router.post("/users/addresses", verifyTokenMiddleware, validateAddress, AddressController.createAddress);
+router.get("/users/addresses", verifyTokenMiddleware, AddressController.getUserAddresses);
+router.patch("/users/addresses/:id", verifyTokenMiddleware, validateAddress, AddressController.updateAddress);
+router.delete("/users/addresses/:id", verifyTokenMiddleware, AddressController.deleteAddress);
 
 module.exports = router;

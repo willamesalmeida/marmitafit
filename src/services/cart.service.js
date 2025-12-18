@@ -46,6 +46,15 @@ class CartService {
       );
     }
 
+    //verify if the product exists in the database aftter to add to the cart
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+    });
+
+    if(!product) {
+      throw new AppError("Product not found!", 404);
+    }
+
     //search the user's cart in the database
     const cart = await CartService.getCartByUser(userId);
 
@@ -141,7 +150,7 @@ class CartService {
       quantity: item.quantity,
     }));
 
-    const order = await OrderService.createOrder(userId, orderItems);
+    const order = await OrderService.createOrder(userId, orderItems, addressId);
 
     await prisma.cartItem.deleteMany({
       where: { cartId: cart.id },

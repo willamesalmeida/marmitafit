@@ -31,6 +31,7 @@ model User {
   Product      Product[]
   Order        Order[]
   Cart         Cart?
+  Address      Address[]
 }
 
 /**
@@ -90,6 +91,8 @@ model Order {
   updatedAt DateTime    @updatedAt
 
   OrderItem OrderItem[]
+  adressId  String?
+  adress    Address?    @relation(fields: [adressId], references: [id], onDelete: SetNull)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -124,4 +127,21 @@ model CartItem {
 
   cart    Cart    @relation(fields: [cartId], references: [id])
   product Product @relation(fields: [productId], references: [id])
+}
+
+model Address {
+  id         String   @id @default(uuid())
+  userId     String
+  street     String
+  number     String
+  complement String?
+  district   String
+  city       String
+  state      String
+  zipCode    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders Order[]
 }

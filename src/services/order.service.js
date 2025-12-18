@@ -3,15 +3,26 @@ const prisma = new PrismaClient();
 const AppError = require("../utils/errorHandler.util");
 
 class OrderService {
+  
   // Creates a user-conditioned order
-  static async createOrder(userId, items) {
+  static async createOrder(userId, items, addressId) {
     try {
+
       //verify if item if pass theougt de function params
-      if (!userId || !items || items.length === 0) {
-        throw new AppError("User ID is required to create an order", 400);
+      if (!userId || !items || items.length === 0 || !addressId) {
+        throw new AppError("User ID, items and address ID is required to create an order", 400);
+      }
+
+      const address = await prisma.address.findUnique({
+        where:{id: addressId, userId}
+      })
+
+      if(!address){
+        throw new AppError("Address not found or unauthorized", 400);
       }
 
       // Validates items and calculates total price (if necessary)
+      
       const orderItems = [];
       for (const item of items) {
         // veirfy if product exist in databases
@@ -39,6 +50,7 @@ class OrderService {
       const order = await prisma.order.create({
         data: {
           userId,
+          addressId,
           OrderItem: {
             create: orderItems,
           },
