@@ -83,7 +83,7 @@ class UserController {
         refreshToken,
       });
     } catch (error) {
-      next(Error);
+      next(error);
     }
   }
 

@@ -66,7 +66,7 @@ class UserService {
       //create an error if user not exist in database
       if (!userBd)
         throw new AppError(
-          "No user with that email was found in the database!",
+          "The password or e-mail provided is different from registered by the user",
           404
         );
 
@@ -76,7 +76,7 @@ class UserService {
       //verify if password is correct
       if (!passwordMatched) {
         throw new AppError(
-          "The password provided is different from the password registered by the user"
+          "The password or e-mail provided is different from registered by the user", 401
         );
       }
       // generete a JWT token
