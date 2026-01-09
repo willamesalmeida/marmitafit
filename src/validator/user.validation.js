@@ -10,13 +10,13 @@ const rules = {
     .pattern(new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*])"))
     .required()
     .messages({
-      "string.min": "A senha deve ter pelo menos 8 caracteres",
-      "string.pattern.base": "A senha deve conter pelo menos 1 letra maiúscula, 1 minúscula e 1 caractere especial (!@#$%^&*)",
-      "any.required": "A senha é obrigatória",
+      "string.min": "The password must be at least 8 characters long",
+      "string.pattern.base": "The password must contain at least 1 uppercase letter, 1 lowercase letter and 1 special character (!@#$%^&*)",
+      "any.required": "The password is required",
     }),
   confirmPassword: Joi.string().valid(Joi.ref("password")).required().messages({
-    "any.only": "As senhas não coincidem",
-    "any.required": "A confirmação da senha é obrigatória",
+    "any.only": "The passwords do not match",
+    "any.required": "The password confirmation is required",
   }),
 
   phone: Joi.string().pattern(/^(\+\d{1,3}\s?)?(\(?\d{2,3}\)?[\s-]?)?\d{4,5}[-]?\d{4}$/).optional(),
@@ -26,11 +26,11 @@ const rules = {
 //login validation
 const accountSignIn = (req, res, next) => {
   const { email, password } = req.body;
-
+y
   const schema = Joi.object({
     email: rules.email.messages({
-      "string.email": "Por favor, insira um endereço de email válido",
-      "any.required": "O email é obrigatório",
+      "string.email": "Please enter a valid email address",
+      "any.required": "The email is required",
     }),
     password: rules.password,
   });
@@ -63,13 +63,13 @@ const accountSignUp = (req, res, next) => {
 
   const schema = Joi.object({
     name: rules.name.messages({
-      "string.min": "O nome deve ter pelo menos 3 caracteres",
-      "string.max": "O nome deve ter no máximo 20 caracteres",
-      "any.required": "O nome é obrigatório",
+      "string.min": "the name have at least 3 characters",
+      "string.max": "the name have maximum 20 characters",
+      "any.required": "The name is required",
     }),
     email: rules.email.messages({
-      "string.email": "Por favor, insira um endereço de email válido",
-      "any.required": "O email é obrigatório",
+      "string.email": "Please enter a valid email address",
+      "any.required": "The email is required",
     }),
     password: rules.password,
     confirmPassword: rules.confirmPassword,
