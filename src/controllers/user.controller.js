@@ -216,9 +216,9 @@ class UserController {
 
       // verity if the refresh token obteined a payload or error
       const decoded = await verifyRefreshToken(refreshToken);
-      if (decoded.error) {
-        throw new AppError(decode.error, 403);
-      }
+      // if (decoded.error) {
+      //   throw new AppError(decoded.error, 403);
+      // }
 
       //Search for refresh token in database
       const storedToken = await RefreshTokenService.findRefreshToken(
@@ -244,6 +244,7 @@ class UserController {
 
       const newRefreshToken = generateRefreshToken({
         userId: storedToken.userId,
+        isAdmin: decoded.isAdmin,
       });
       //Define new expiration date for refresh token
       const expiresIn = dayjs().add(7, "days").toDate();
@@ -254,6 +255,9 @@ class UserController {
         expiresIn,
         storedToken.deviceId
       );
+
+      //talvez essa linha de codigo abaixo seja desnecessaria
+    // a linha acima RefreshTokenService.saveRefreshToken já faz a verificação
       await RefreshTokenService.revokedRefreshToken(refreshToken);
 
       //response to client
