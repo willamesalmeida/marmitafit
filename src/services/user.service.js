@@ -9,6 +9,13 @@ const jwt = require("jsonwebtoken");
 //Function DTO
 const userDTO = require("../dtos/user.dtos");
 
+const {
+  generateAccessToken,
+  generateRefreshToken,
+} = require("../utils/jwt.utils");
+
+const { saveRefreshToken } = require("./refreshToken.service");
+
 const prisma = new PrismaClient();
 /* const salt = 10;
 const saltRound = bcrypt.genSalt(salt); */
@@ -67,7 +74,7 @@ class UserService {
       if (!userBd)
         throw new AppError(
           "The password or e-mail provided is different from registered by the user",
-          404
+          401
         );
 
       //compare if password matched
@@ -76,17 +83,37 @@ class UserService {
       //verify if password is correct
       if (!passwordMatched) {
         throw new AppError(
-          "The password or e-mail provided is different from registered by the user", 401
+          "The password or e-mail provided is different from registered by the user",
+          401
         );
-      }
+      } /* 
       // generete a JWT token
       const token = jwt.sign(
         { userId: userBd.id, isAdmin: userBd.isAdmin },
         process.env.JWT_SECRET_KEY,
         { expiresIn: "1h" }
+      ); */
+
+      //genarete access token
+      const accessToken = generateAccessToken({
+        userId: userBd.id,
+        isAdmin: userBd.isAdmin,
+      });
+
+      //generate refresh token
+      const refreshToken = generateRefreshToken({
+        userId: userBd.id,
+      });
+
+      //Save access token on DB
+      await saveRefreshToken(
+        userBd.id,
+        refreshToken,
+        new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        deviceId
       );
 
-      return { message: "Login successful!", token, user: userDTO(userBd) };
+      return { message: "Login successful!", accessToken,refreshToken, user: userDTO(userBd) };
     } catch (error) {
       throw new AppError(
         error.message || "Error during login!",

@@ -26,7 +26,7 @@ const verifyAccessToken = (token) => {
   try {
     return jwt.verify(token, process.env.JWT_SECRET_KEY);
   } catch (error) {
-    throw new AppError("Invalid or expired access token!", 400);
+    throw new AppError("Invalid or expired access token!", 401);
   }
 };
 const verifyRefreshToken = (token) => {
@@ -48,7 +48,7 @@ const verifyResetToken = (token) => {
   try {
     return jwt.verify(token, process.env.JWT_SECRET_KEY);
   } catch (error) {
-    return { error: "Invalid or expired token!", details: error.message };
+   throw new AppError("Invalid or expired token!", 401);
   }
 };
 

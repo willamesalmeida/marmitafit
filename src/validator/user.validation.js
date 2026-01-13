@@ -11,7 +11,8 @@ const rules = {
     .required()
     .messages({
       "string.min": "The password must be at least 8 characters long",
-      "string.pattern.base": "The password must contain at least 1 uppercase letter, 1 lowercase letter and 1 special character (!@#$%^&*)",
+      "string.pattern.base":
+        "The password must contain at least 1 uppercase letter, 1 lowercase letter and 1 special character (!@#$%^&*)",
       "any.required": "The password is required",
     }),
   confirmPassword: Joi.string().valid(Joi.ref("password")).required().messages({
@@ -19,20 +20,27 @@ const rules = {
     "any.required": "The password confirmation is required",
   }),
 
-  phone: Joi.string().pattern(/^(\+\d{1,3}\s?)?(\(?\d{2,3}\)?[\s-]?)?\d{4,5}[-]?\d{4}$/).optional(),
-  address: Joi.string().trim().min(5).max(100).optional()
+  phone: Joi.string()
+    .pattern(/^(\+\d{1,3}\s?)?(\(?\d{2,3}\)?[\s-]?)?\d{4,5}[-]?\d{4}$/)
+    .optional(),
+  address: Joi.string().trim().min(5).max(100).optional(),
 };
 
 //login validation
 const accountSignIn = (req, res, next) => {
   const { email, password } = req.body;
-y
+
   const schema = Joi.object({
-    email: rules.email.messages({
-      "string.email": "Please enter a valid email address",
-      "any.required": "The email is required",
-    }),
-    password: rules.password,
+    email: Joi.string()
+      .email()
+      .required()
+      .messages({
+        "string.email": "Please enter a valid email address",
+        "any.required": "The email is required",
+      }),
+    password: Joi.string()
+      .required()
+      .messages({ "any.required": "The password is required" }),
   });
 
   const options = { abortEarly: false };
@@ -125,28 +133,35 @@ const passwordReset = (req, res, next) => {
 };
 
 const validateProfileUpdate = (req, res, next) => {
-  const {phone, address } = req.body;
+  const { phone, address } = req.body;
 
   const schema = Joi.object({
     phone: rules.phone,
     address: rules.address,
-  })
+  });
 
-  const option ={ abortEarly: false }
+  const option = { abortEarly: false };
 
-  const { error } = schema.validate({
-    phone,
-    address,
-  }, 
-option);
+  const { error } = schema.validate(
+    {
+      phone,
+      address,
+    },
+    option
+  );
 
-if(error) {
-  return res.status(400).json({
-    message: "Validation error",
-    details: error.details.map((detail) => detail.message)
-  })
-}
-next()
-}
+  if (error) {
+    return res.status(400).json({
+      message: "Validation error",
+      details: error.details.map((detail) => detail.message),
+    });
+  }
+  next();
+};
 
-module.exports = { accountSignUp, accountSignIn, passwordReset, validateProfileUpdate };
+module.exports = {
+  accountSignUp,
+  accountSignIn,
+  passwordReset,
+  validateProfileUpdate,
+};

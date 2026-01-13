@@ -43,6 +43,7 @@ const validateRefreshToken = (req, res, next) => {
   next();
 };
 
+//Public routes
 router.post("/register", accountSignUp, UserController.registerUser);
 router.post("/login", accountSignIn, UserController.loginUser);
 router.post("/logout", UserController.logout);
