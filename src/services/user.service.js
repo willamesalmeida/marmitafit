@@ -34,7 +34,7 @@ class UserService {
       if (userBd) {
         throw new AppError(
           "The email has already been used to register another user!",
-          409
+          409,
         );
       }
       //create a hash for password
@@ -57,16 +57,21 @@ class UserService {
     } catch (error) {
       throw new AppError(
         error.message || "Error registering user!",
-        error.statusCode
+        error.statusCode,
       );
     }
   }
 
-  static async authenticateUser(email, password) {
+  static async authenticateUser(email, password, deviceId) {
     try {
       if (!email || !password) {
         throw new AppError("Email and password are required!", 400);
       }
+
+      if (!deviceId) {
+        throw new AppError("Device ID is required!", 400);
+      }
+
       //verify if email exist in database
       const userBd = await prisma.user.findUnique({ where: { email } });
 
@@ -74,7 +79,7 @@ class UserService {
       if (!userBd)
         throw new AppError(
           "The password or e-mail provided is different from registered by the user",
-          401
+          401,
         );
 
       //compare if password matched
@@ -84,7 +89,7 @@ class UserService {
       if (!passwordMatched) {
         throw new AppError(
           "The password or e-mail provided is different from registered by the user",
-          401
+          401,
         );
       } /* 
       // generete a JWT token
@@ -110,14 +115,19 @@ class UserService {
         userBd.id,
         refreshToken,
         new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        deviceId
+        deviceId,
       );
 
-      return { message: "Login successful!", accessToken,refreshToken, user: userDTO(userBd) };
+      return {
+        message: "Login successful!",
+        accessToken,
+        refreshToken,
+        user: userDTO(userBd),
+      };
     } catch (error) {
       throw new AppError(
         error.message || "Error during login!",
-        error.statusCode || 500
+        error.statusCode || 500,
       );
     }
   }
@@ -144,7 +154,7 @@ class UserService {
     } catch (error) {
       throw new AppError(
         error.message || "Error fetching user!",
-        error.statusCode || 500
+        error.statusCode || 500,
       );
     }
   }
@@ -169,7 +179,7 @@ class UserService {
     } catch (error) {
       throw new AppError(
         error.message || "Error updating password!",
-        error.statusCode || 500
+        error.statusCode || 500,
       );
     }
   }
@@ -236,12 +246,12 @@ class UserService {
 
     try {
       const { result } = await cloudinary.uploader.destroy(
-        user.profilePublicId
+        user.profilePublicId,
       );
 
       if (result.result !== "ok" && result.result !== "not_found") {
         console.warn(
-          `Cloudinary.destroy returned unexpected result: ${result}`
+          `Cloudinary.destroy returned unexpected result: ${result}`,
         );
       }
     } catch (err) {
@@ -270,6 +280,17 @@ class UserService {
     });
 
     return { message: "User deleted successfully!" };
+  }
+
+  static async getUserById(id) {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: id },
+      });
+      return user;
+    } catch (error) {
+      throw error;
+    }
   }
 }
 

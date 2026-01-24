@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
-const {verifyAccessToken} = require("../utils/jwt.utils")
+const { verifyAccessToken } = require("../utils/jwt.utils");
 
 const authIsAdminMiddleware = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
@@ -15,9 +15,13 @@ const authIsAdminMiddleware = (req, res, next) => {
     // const decoded = verifyResetToken(token); //everytime I use this functio to verify token, was returned an error
     // const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY); //decodes the token received in the request
 
-    const decoded = verifyAccessToken(token)
+    const decoded = verifyAccessToken(token);
 
-    if (!decoded || typeof decoded.isAdmin === "undefined" || !decoded.isAdmin ) {
+    if (
+      !decoded ||
+      typeof decoded.isAdmin === "undefined" ||
+      !decoded.isAdmin
+    ) {
       return res.status(401).json({
         message:
           "Access denied! You don't have permission, only administrators!",
@@ -42,7 +46,7 @@ const verifyTokenMiddleware = (req, res, next) => {
   try {
     // const decoded = verifyResetToken(token);
     //const decoded = verifyAccessToken(token)
-    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY)
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
 
     if (decoded.error) {
       return res.status(403).json({
@@ -54,7 +58,18 @@ const verifyTokenMiddleware = (req, res, next) => {
     req.user = decoded;
     next();
   } catch (error) {
-    res.status(403).json({ message: "Invalid token or token expire!", error });
+    console.log("⏰ [Middleware] Token expirado detectado (401)");
+    if (error.name === "TokenExpiredError") {
+      return res
+        .status(401)
+        .json({ message: "Invalid token or token expire!", error });
+    }
+
+    console.log("🚫 [Middleware] Erro de autenticação (403):", error.message);
+    return res.status(403).json({
+      message: "Invalid token!",
+      error: error.message,
+    });
   }
 };
 
