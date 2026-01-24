@@ -2,7 +2,7 @@
 const AddressController = require("../controllers/address.controller");
 const UserController = require("../controllers/user.controller");
 
-//validators  
+//validators
 const { validateAddress } = require("../validator/address.validation");
 
 /* const express = require("express") */
@@ -13,6 +13,7 @@ const {
   accountSignUp,
   passwordReset,
 } = require("../validator/user.validation");
+
 const {
   verifyTokenMiddleware,
 } = require("../middlewares/authIsAdmin.middleware");
@@ -20,8 +21,6 @@ const {
 const upload = require("../middlewares/upload.middleware");
 const { validateProfileUpdate } = require("../validator/user.validation");
 const Joi = require("joi");
-
-
 
 /* const router = express.Router() */
 const router = Router();
@@ -57,15 +56,35 @@ router.patch(
   verifyTokenMiddleware,
   upload.single("profileImage"),
   validateProfileUpdate,
-  UserController.updateUserProfile
+  UserController.updateUserProfile,
 );
 
 //remove profile image
+router.get("/me", verifyTokenMiddleware, UserController.me);
+
 router.delete("/users", verifyTokenMiddleware, UserController.deleteUser);
 
-router.post("/users/addresses", verifyTokenMiddleware, validateAddress, AddressController.createAddress);
-router.get("/users/addresses", verifyTokenMiddleware, AddressController.getUserAddresses);
-router.patch("/users/addresses/:id", verifyTokenMiddleware, validateAddress, AddressController.updateAddress);
-router.delete("/users/addresses/:id", verifyTokenMiddleware, AddressController.deleteAddress);
+router.post(
+  "/users/addresses",
+  verifyTokenMiddleware,
+  validateAddress,
+  AddressController.createAddress,
+);
+router.get(
+  "/users/addresses",
+  verifyTokenMiddleware,
+  AddressController.getUserAddresses,
+);
+router.patch(
+  "/users/addresses/:id",
+  verifyTokenMiddleware,
+  validateAddress,
+  AddressController.updateAddress,
+);
+router.delete(
+  "/users/addresses/:id",
+  verifyTokenMiddleware,
+  AddressController.deleteAddress,
+);
 
 module.exports = router;

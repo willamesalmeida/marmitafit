@@ -22,6 +22,7 @@ const RefreshTokenService = require("../services/refreshToken.service");
 
 //library to management date
 const dayjs = require("dayjs");
+const userDTO = require("../dtos/user.dtos");
 
 // const newPasswordSchema = require("../validator/resetPassword.validation");
 
@@ -55,7 +56,11 @@ class UserController {
       const { email, password, deviceId } = req.body;
 
       //1 authenticates the user
-      const { user } = await UserService.authenticateUser(email, password);
+      const { user } = await UserService.authenticateUser(
+        email,
+        password,
+        deviceId,
+      );
 
       //2 generate access token and refresh token
       const accessToken = generateAccessToken({
@@ -72,7 +77,7 @@ class UserController {
         user.id,
         refreshToken,
         expiresIn,
-        deviceId
+        deviceId,
       );
 
       //5 response to client
@@ -210,7 +215,11 @@ class UserController {
     try {
       const { refreshToken } = req.body;
 
+      console.log("====REFRESHH DEBUIG=====")
+      console.log("Refresh token received:", refreshToken);
+
       if (!refreshToken) {
+        console.log("não vveio no body");
         throw new AppError("Refresh token not provided", 401);
       }
 
@@ -221,10 +230,11 @@ class UserController {
       // }
 
       //Search for refresh token in database
-      const storedToken = await RefreshTokenService.findRefreshToken(
-        refreshToken
-      );
+      const storedToken =
+        await RefreshTokenService.findRefreshToken(refreshToken);
+        console.log("encontrado no DB:", storedToken);
       if (!storedToken || storedToken.isRevoked) {
+        console.log("Não eexiste no banco de dados")
         throw new AppError("Invalid or revoked refresh token", 403);
       }
 
@@ -253,19 +263,18 @@ class UserController {
         storedToken.userId,
         newRefreshToken,
         expiresIn,
-        storedToken.deviceId
+        storedToken.deviceId,
       );
 
       //talvez essa linha de codigo abaixo seja desnecessaria
-    // a linha acima RefreshTokenService.saveRefreshToken já faz a verificação
+      // a linha acima RefreshTokenService.saveRefreshToken já faz a verificação
       await RefreshTokenService.revokedRefreshToken(refreshToken);
 
       //response to client
       res
         .status(200)
         .json({ accessToken: newAccessToken, refreshToken: newRefreshToken });
-    
-      } catch (error) {
+    } catch (error) {
       next(error);
     }
   }
@@ -279,7 +288,7 @@ class UserController {
       const updatedUser = await UserService.updateUserProfile(
         userId,
         updates,
-        file
+        file,
       );
 
       res
@@ -313,6 +322,21 @@ class UserController {
       res.status(200).json({
         message: "Logout successful!",
       });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async me(req, res, next) {
+    try {
+      const userId = req.user.userId;
+      
+      const user = await UserService.getUserById(userId);
+
+      if (!user) {
+        throw new AppError("User not found", 404);
+      }
+      res.status(200).json({ success: true, user: userDTO(user) });
     } catch (error) {
       next(error);
     }
