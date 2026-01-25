@@ -87,4 +87,12 @@ router.delete(
   AddressController.deleteAddress,
 );
 
+// user.routes.js - antes da rota /refresh
+router.post("/refresh", (req, res, next) => {
+  console.log("📍 ROTA /refresh ACESSADA");
+  console.log("   Hora:", new Date().toISOString());
+  console.log("   Body keys:", Object.keys(req.body));
+  next();
+}, validateRefreshToken, UserController.userRefreshToken);
+
 module.exports = router;
