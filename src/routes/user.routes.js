@@ -27,11 +27,13 @@ const router = Router();
 
 const refreshTokenSchema = Joi.object({
   refreshToken: Joi.string().required(),
+  deviceId: Joi.string().optional().allow(null, ""), // deviceId is optional
 });
 
 const validateRefreshToken = (req, res, next) => {
   const { error } = refreshTokenSchema.validate(req.body, {
     abortEarly: false,
+    allowUnknown: true, // Allow extra fields (like deviceId) without error
   });
   if (error) {
     return res.status(400).json({
@@ -41,12 +43,17 @@ const validateRefreshToken = (req, res, next) => {
   }
   next();
 };
-
 //Public routes
 router.post("/register", accountSignUp, UserController.registerUser);
 router.post("/login", accountSignIn, UserController.loginUser);
 router.post("/logout", UserController.logout);
-router.post("/refresh", validateRefreshToken, UserController.userRefreshToken);
+// Refresh route with log for debug
+router.post("/refresh", (req, res, next) => {
+  console.log("📍 ROUTE /refresh ACCESSED");
+  console.log("   Time:", new Date().toISOString());
+  console.log("   Body keys:", Object.keys(req.body));
+  next();
+}, validateRefreshToken, UserController.userRefreshToken);
 router.post("/reset-password/request", UserController.requestPasswordReset);
 router.post("/reset-password", passwordReset, UserController.resetPassword);
 
@@ -87,12 +94,6 @@ router.delete(
   AddressController.deleteAddress,
 );
 
-// user.routes.js - antes da rota /refresh
-router.post("/refresh", (req, res, next) => {
-  console.log("📍 ROTA /refresh ACESSADA");
-  console.log("   Hora:", new Date().toISOString());
-  console.log("   Body keys:", Object.keys(req.body));
-  next();
-}, validateRefreshToken, UserController.userRefreshToken);
+
 
 module.exports = router;
