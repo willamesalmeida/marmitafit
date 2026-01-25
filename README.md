@@ -11,7 +11,7 @@ O MarmitaFit é uma aplicação proprietária projetada para gerir o fluxo compl
 O projeto utiliza tecnologias de padrão industrial para garantir performance e facilidade de manutenção:
 
 * **Ambiente:** Node.js com framework Express.
-* **Persistência:** PostgreSQL integrado através do Prisma ORM.
+* **Persistência:** MySQL integrado através do Prisma ORM.
 * **Autenticação:** Sistema duplo de tokens (Access & Refresh Tokens) via JWT com controle de expiração.
 * **Media:** Gestão de arquivos e processamento de imagens via Cloudinary API.
 * **Comunicação:** Integração com SendGrid para notificações de sistema e recuperação de conta.
