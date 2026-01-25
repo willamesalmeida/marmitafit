@@ -213,47 +213,66 @@ class UserController {
   // checks the refresh token and creates a new access token
   static async userRefreshToken(req, res, next) {
     try {
-      const { refreshToken } = req.body;
+      const { refreshToken, deviceId } = req.body;
 
-      console.log("🔄 REFRESH ENDPOINT CHAMADO");
+      console.log("Refresh endpoint called");
 
       if (!refreshToken) {
         throw new AppError("Refresh token not provided", 401);
       }
 
       console.log(
-        "Token (primeiros 50 chars):",
+        "Token (first 50 chars):",
         refreshToken.substring(0, 50) + "...",
       );
       console.log("Token length:", refreshToken.length);
 
-      // verity if the refresh token obteined a payload or error
-      const decoded = await verifyRefreshToken(refreshToken);
-      // if (decoded.error) {
-      //   throw new AppError(decoded.error, 403);
-      // }
+      // FIRST: Verify JWT signature of refresh token
+      // This is more efficient and ensures JWT is valid before querying database
+      let decoded;
+      try {
+        decoded = verifyRefreshToken(refreshToken);
+      } catch (error) {
+        // If JWT is expired or invalid, return appropriate error
+        console.log("Invalid or expired JWT:", error.message);
+        
+        // If already an AppError, rethrow with correct statusCode
+        if (error instanceof AppError) {
+          throw error;
+        }
+        
+        // If not AppError, create new one based on error type
+        if (error.name === 'TokenExpiredError') {
+          throw new AppError("Refresh token expired", 401);
+        }
+        throw new AppError("Invalid refresh token", 403);
+      }
 
-      //Search for refresh token in database
+      // SECOND: Verify if token exists in database and is not expired/revoked
       const storedToken =
         await RefreshTokenService.findRefreshToken(refreshToken);
 
       console.log(
-        "Token no banco:",
-        storedToken ? "ENCONTRADO" : "NÃO ENCONTRADO",
+        "Token in database:",
+        storedToken ? "FOUND" : "NOT FOUND",
       );
-      if (storedToken) {
-        console.log("Revogado?:", storedToken.isRevoked);
-        console.log("Expira em:", storedToken.expiresIn);
-        console.log(
-          "Ainda válido?:",
-          new Date(storedToken.expiresIn) > new Date(),
-        );
+      
+      if (!storedToken) {
+        console.log("Token not found or expired in database");
+        throw new AppError("Invalid or expired refresh token", 401);
       }
 
-      if (!storedToken || storedToken.isRevoked) {
-        console.log("Não eexiste no banco de dados");
+      if (storedToken.isRevoked) {
+        console.log("Token has been revoked");
+        throw new AppError("Refresh token has been revoked", 403);
+      }
 
-        throw new AppError("Invalid or revoked refresh token", 403);
+      // Additional expiration check in database (redundant but safe)
+      const now = new Date();
+      const expiresIn = new Date(storedToken.expiresIn);
+      if (expiresIn < now) {
+        console.log("Token expired in database");
+        throw new AppError("Refresh token expired", 401);
       }
 
       //generate a new access token
@@ -267,29 +286,27 @@ class UserController {
         isAdmin: decoded.isAdmin || false,
       });
 
-
       //Define new expiration date for refresh token
-      const expiresIn = dayjs().add(7, "days").toDate();
+      const newExpiresIn = dayjs().add(7, "days").toDate();
+      
+      // Revoke old token before saving new one
+      await RefreshTokenService.revokedRefreshToken(refreshToken);
+      
       //save the new refresh token in database
       await RefreshTokenService.saveRefreshToken(
         storedToken.userId,
         newRefreshToken,
-        expiresIn,
-        storedToken.deviceId || deviceId,
+        newExpiresIn,
+        storedToken.deviceId || deviceId || null,
       );
 
-      //talvez essa linha de codigo abaixo seja desnecessaria
-      // a linha acima RefreshTokenService.saveRefreshToken já faz a verificação
-      await RefreshTokenService.revokedRefreshToken(refreshToken);
-
-
-       console.log("✅ Refresh completo! Novos tokens gerados");
+      console.log("Refresh complete! New tokens generated");
       //response to client
       res
         .status(200)
         .json({ accessToken: newAccessToken, refreshToken: newRefreshToken });
     } catch (error) {
-      console.error("❌ ERRO NO REFRESH:", error.message);
+      console.error("Erro no refresh: ", error.message);
       next(error);
     }
   }

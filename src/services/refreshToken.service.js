@@ -108,9 +108,22 @@ const saveRefreshToken = async (userId, token, expiresIn, deviceId = null) => {
 };
 
 const findRefreshToken = async (token) => {
-  return await prisma.refreshToken.findUnique({
+  const storedToken = await prisma.refreshToken.findUnique({
     where: { token },
   });
+
+  // Verify if token exist in database and not expired
+  if (storedToken) {
+    const now = new Date();
+    const expiresIn = new Date(storedToken.expiresIn);
+    
+    // If token expired in database, return null
+    if (expiresIn < now) {
+      return null;
+    }
+  }
+
+  return storedToken;
 };
 
 const revokedRefreshToken = async (token) => {
