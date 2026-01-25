@@ -215,13 +215,17 @@ class UserController {
     try {
       const { refreshToken } = req.body;
 
-      console.log("====REFRESHH DEBUIG=====")
-      console.log("Refresh token received:", refreshToken);
+      console.log("🔄 REFRESH ENDPOINT CHAMADO");
 
       if (!refreshToken) {
-        console.log("não vveio no body");
         throw new AppError("Refresh token not provided", 401);
       }
+
+      console.log(
+        "Token (primeiros 50 chars):",
+        refreshToken.substring(0, 50) + "...",
+      );
+      console.log("Token length:", refreshToken.length);
 
       // verity if the refresh token obteined a payload or error
       const decoded = await verifyRefreshToken(refreshToken);
@@ -232,30 +236,38 @@ class UserController {
       //Search for refresh token in database
       const storedToken =
         await RefreshTokenService.findRefreshToken(refreshToken);
-        console.log("encontrado no DB:", storedToken);
-      if (!storedToken || storedToken.isRevoked) {
-        console.log("Não eexiste no banco de dados")
-        throw new AppError("Invalid or revoked refresh token", 403);
+
+      console.log(
+        "Token no banco:",
+        storedToken ? "ENCONTRADO" : "NÃO ENCONTRADO",
+      );
+      if (storedToken) {
+        console.log("Revogado?:", storedToken.isRevoked);
+        console.log("Expira em:", storedToken.expiresIn);
+        console.log(
+          "Ainda válido?:",
+          new Date(storedToken.expiresIn) > new Date(),
+        );
       }
 
-      /* //verify if the refresh token stored is expired
-      if (dayjs(storedToken.expiresIn).isBefore(dayjs())) {
-        throw new AppError("Refresh token expired", 403);
+      if (!storedToken || storedToken.isRevoked) {
+        console.log("Não eexiste no banco de dados");
+
+        throw new AppError("Invalid or revoked refresh token", 403);
       }
-      /*  if (new Date(storedToken.expiresIn) < new Date()) {
-        throw new AppError("Refresh token has expired", 403);
-      } */
 
       //generate a new access token
       const newAccessToken = generateAccessToken({
         userId: storedToken.userId,
-        isAdmin: decoded.isAdmin,
+        isAdmin: decoded.isAdmin || false
       });
 
       const newRefreshToken = generateRefreshToken({
         userId: storedToken.userId,
-        isAdmin: decoded.isAdmin,
+        isAdmin: decoded.isAdmin || false,
       });
+
+
       //Define new expiration date for refresh token
       const expiresIn = dayjs().add(7, "days").toDate();
       //save the new refresh token in database
@@ -263,18 +275,21 @@ class UserController {
         storedToken.userId,
         newRefreshToken,
         expiresIn,
-        storedToken.deviceId,
+        storedToken.deviceId || deviceId,
       );
 
       //talvez essa linha de codigo abaixo seja desnecessaria
       // a linha acima RefreshTokenService.saveRefreshToken já faz a verificação
       await RefreshTokenService.revokedRefreshToken(refreshToken);
 
+
+       console.log("✅ Refresh completo! Novos tokens gerados");
       //response to client
       res
         .status(200)
         .json({ accessToken: newAccessToken, refreshToken: newRefreshToken });
     } catch (error) {
+      console.error("❌ ERRO NO REFRESH:", error.message);
       next(error);
     }
   }
@@ -330,7 +345,7 @@ class UserController {
   static async me(req, res, next) {
     try {
       const userId = req.user.userId;
-      
+
       const user = await UserService.getUserById(userId);
 
       if (!user) {
