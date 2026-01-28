@@ -4,7 +4,7 @@ const AppError = require("../utils/errorHandler.util");
 const { v4: uuidv4 } = require("uuid");
 
 // Tempos de expiração
-const ACESS_TOKEN_EXPIRES = "15m";  // Aumentado de "2m" para "15m"
+const ACESS_TOKEN_EXPIRES = "1m";  // Aumentado de "2m" para "15m"
 const REFRESH_TOKEN_EXPIRES = "7d";
 const ACCESS_RESET_TOKEN_EXPIRES = "15m";
 
@@ -55,7 +55,7 @@ const generateResetToken = (email) => {
 // Verify reset token
 const verifyResetToken = (token) => {
   try {
-    return jwt.verify(token, process.env.JWT_SECRET_KEY);
+    return jwt.verify(token, process.env.JWT_RESET_SECRET_KEY);
   } catch (error) {
     throw new AppError("Invalid or expired token!", 401);
   }
