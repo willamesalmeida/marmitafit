@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  db_dev:
+    image: mysql:8.0
+    container_name: marmitafit_dev
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: marmitafit_dev
+    ports:
+      - "3306:3306"
+    volumes:
+      - marmitafit_dev_data:/var/lib/mysql
+
+volumes:
+  marmitafit_dev_data:
