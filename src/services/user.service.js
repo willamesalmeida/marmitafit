@@ -1,8 +1,9 @@
-const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcrypt");
 require("dotenv").config();
 const AppError = require("../utils/errorHandler.util");
 cloudinary = require("../config/cloudinary");
+
+const prisma = require("../config/prisma");
 
 //import JWT autenticate
 const jwt = require("jsonwebtoken");
@@ -16,7 +17,6 @@ const {
 
 const { saveRefreshToken } = require("./refreshToken.service");
 
-const prisma = new PrismaClient();
 /* const salt = 10;
 const saltRound = bcrypt.genSalt(salt); */
 
@@ -148,7 +148,6 @@ class UserService {
       if (!user) {
         throw new AppError("User not found!", 404);
       }
-      console.log("getUserByEmail", user);
 
       return { message: "User found!", user: userDTO(user) };
     } catch (error) {
@@ -258,18 +257,19 @@ class UserService {
       console.error("Error removing profile image from cloudinary: ", err);
     }
     // updtae user to remove image profile
-    await prisma.user.update({
-      where: {
-        id: userId,
-      },
-      data: {
-        profileImageUrl: null,
-        profilePublicId: null,
-      },
-    });
-  }
-  catch(error) {
-    throw new AppError(error.message || "Error removing profile image!", 500);
+    try {
+      await prisma.user.update({
+        where: {
+          id: userId,
+        },
+        data: {
+          profileImageUrl: null,
+          profilePublicId: null,
+        },
+      });
+    } catch (error) {
+      throw new AppError(error.message || "Error removing profile image!", 500);
+    }
   }
 
   static async deleteUser(userId) {

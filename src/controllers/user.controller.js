@@ -145,12 +145,12 @@ class UserController {
       const user = await UserService.getUserByEmail(email);
 
       // checks if the email exists in the database
-      if (!user) {
-        throw new AppError("User not found!", 404);
-        /*  return res.status(404).json({
-          message: "User not found!",
-        }); */
-      }
+      // if (!user) {
+      //   throw new AppError("User not found!", 404);
+      //   /*  return res.status(404).json({
+      //     message: "User not found!",
+      //   }); */
+      // }
 
       // create a token for email
       const token = generateResetToken(email);

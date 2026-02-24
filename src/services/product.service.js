@@ -1,8 +1,7 @@
-const { PrismaClient } = require("@prisma/client");
 const cloudinary = require("../config/cloudinary");
 const AppError = require("../utils/errorHandler.util")
+const prisma = require("../config/prisma");
 
-const prisma = new PrismaClient();
 
 class productService {
   static async createProduct(userId, name, description, price, imageUrl, publicId) {
@@ -83,7 +82,7 @@ class productService {
       const skip = (page - 1) * limit;
 
       //get all product in database
-      return await prisma.product.findMany({
+      const products = await prisma.product.findMany({
         skip,
         take: limit,
       });

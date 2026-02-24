@@ -1,10 +1,8 @@
-const { PrismaClient } = require("@prisma/client");
-
 const AppError = require("../utils/errorHandler.util");
 
 const OrderService = require("./order.service");
 
-const prisma = new PrismaClient();
+const prisma = require("../config/prisma");
 
 class CartService {
   //Recupera o carrinho do usuário ou cria um novo se não existir
@@ -138,7 +136,7 @@ class CartService {
     return { message: "Item successfully removed from your cart!" };
   }
 
-  static async checkoutCart(userId) {
+  static async checkoutCart(userId, addressId) {
     const cart = await CartService.getCartByUser(userId);
     
     if (cart.CartItem.length == 0) {

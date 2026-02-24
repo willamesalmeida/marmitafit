@@ -1,5 +1,5 @@
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const prisma = require("../config/prisma");
+
 const AppError = require("../utils/errorHandler.util");
 
 class OrderService {
@@ -50,7 +50,7 @@ class OrderService {
       const order = await prisma.order.create({
         data: {
           userId,
-          addressId,
+          addressId: adressId, //the addressId is maped to adressId because in the database the field is adressId
           OrderItem: {
             create: orderItems,
           },

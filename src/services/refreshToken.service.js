@@ -1,10 +1,10 @@
 // const prisma = require("../config/database")
-const { PrismaClient } = require("@prisma/client");
-const dayjs = require("dayjs");
+const prisma = require("../config/prisma");
+// const dayjs = require("dayjs"); passei a usar o newDate diretamente
 //class handler error
 const AppError = require("../utils/errorHandler.util");
 
-const prisma = new PrismaClient();
+
 
 const MAX_ACTIVE_TOKENS = 5;
 /**
