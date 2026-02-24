@@ -1,5 +1,5 @@
 //import library necessarys to do something kkk
-require("dotenv").config();
+// require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const { cleanExpiredTokens } = require("./services/refreshToken.service.js");
