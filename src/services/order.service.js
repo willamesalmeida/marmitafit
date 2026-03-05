@@ -50,7 +50,7 @@ class OrderService {
       const order = await prisma.order.create({
         data: {
           userId,
-          addressId: adressId, //the addressId is maped to adressId because in the database the field is adressId
+          adressId: addressId, //the addressId is maped to adressId because in the database the field is adressId
           OrderItem: {
             create: orderItems,
           },
