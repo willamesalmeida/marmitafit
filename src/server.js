@@ -2,6 +2,8 @@
 // require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet")
+const xss = require("xss-clean")
 const { cleanExpiredTokens } = require("./services/refreshToken.service.js");
 
 //import database connection
@@ -24,13 +26,15 @@ const {
 const app = express();
 
 const corsOptions = {
-  origin: "*",
+  origin: process.env.ALLOWED_ORIGIN || "*",
   optionsSuccessStatus: 200,
   method: ["GET", "POST", "DELETE", "UPDATE", "PUT", "PATCH"],
 };
 
+app.use(helmet()) //add helmet to secure the app by setting various HTTP headers
 app.use(cors(corsOptions));
 app.use(express.json());
+app.use(xss()) //add xss-clean to sanitize user input and prevent XSS attacks
 app.use(express.urlencoded({ extended: true }));
 //middleware limit rate and slowing down request
 app.use(limiter);
