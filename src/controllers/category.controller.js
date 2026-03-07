@@ -4,9 +4,9 @@ const AppError = require("../utils/errorHandler.util.js");
 class CategoryController {
   static async createCategory(req, res, next) {
     try {
-      const { name } = req.body;
+      let { name } = req.body;
 
-      
+
       if (!name) {
         throw new AppError("Name is required", 400);
       }

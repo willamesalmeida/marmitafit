@@ -13,4 +13,5 @@ router.delete("/products/:id", authIsAdminMiddleware, ProductController.deletePr
 
 router.get("/products", verifyTokenMiddleware, ProductController.getAllProducts)
 
+
 module.exports = router;

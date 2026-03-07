@@ -1,21 +1,45 @@
 const cloudinary = require("../config/cloudinary");
-const AppError = require("../utils/errorHandler.util")
+const AppError = require("../utils/errorHandler.util");
 const prisma = require("../config/prisma");
 
-
 class productService {
-  static async createProduct(userId, name, description, price, imageUrl, publicId) {
+  static async createProduct(
+    userId,
+    name,
+    description,
+    price,
+    imageUrl,
+    publicId,
+    categoryIds = [],
+  ) {
     try {
       if (!userId || !name || !description || !price || !imageUrl) {
         throw new AppError("All product fields are required!", 400);
       }
 
-      return await prisma.product.create({
-        data: {userId, name, description, price, imageUrl, publicId },
+      // return await prisma.product.create({
+      //   data: {userId, name, description, price, imageUrl, publicId },
+      // });
+
+      const product = await prisma.product.create({
+        data: { userId, name, description, price, imageUrl, publicId },
       });
 
+      if (categoryIds.length > 0) {
+        await prisma.productCategory.createMany({
+          data: categoryIds.map((categoryId) => ({
+            productId: product.id,
+            categoryId,
+          })),
+        });
+      }
+
+      return await prisma.product.findUnique({
+        where: { id: product.id },
+        include: { categories: { include: { category: true } } },
+      });
     } catch (error) {
-      console.log(error)
+      console.log(error);
       throw new AppError("Error registering product!", 500);
     }
   }
@@ -32,7 +56,7 @@ class productService {
       if (!product) {
         throw new AppError(
           "The product you are trying to delete was not found in the database!",
-          404
+          404,
         );
       }
 
@@ -40,19 +64,19 @@ class productService {
       if (product.publicId) {
         try {
           const deleteImage = await cloudinary.uploader.destroy(
-            product.publicId
+            product.publicId,
           );
 
           if (!deleteImage) {
             throw new AppError(
               "Error deleting product image in Cloudinary",
-              500
+              500,
             );
           }
         } catch (error) {
           throw new AppError(
             "Error deleting product image that was stored in cloudinary",
-            500
+            500,
           );
         }
       }
@@ -73,7 +97,7 @@ class productService {
     }
   }
 
-  static async getAllProducts(page, limit) {
+  static async getAllProducts(page, limit, categoryId = null) {
     try {
       if (!page || !limit) {
         throw new AppError("Page and limit parameters are required!", 400);
@@ -85,6 +109,10 @@ class productService {
       const products = await prisma.product.findMany({
         skip,
         take: limit,
+        include: { categories: { include: { category: true } } },
+        ...(categoryId && {
+          where: { categories: { some: { categoryId: Number(categoryId) } } },
+        }),
       });
 
       const totalProducts = await prisma.product.count();

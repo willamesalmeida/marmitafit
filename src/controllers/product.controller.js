@@ -6,9 +6,11 @@ class ProductController {
   static async createProduct(req, res, next) {
     try {
       // captures the data coming from the request
-      let { name, description, price } = req.body;
+      let { name, description, price, categoryIds } = req.body;
+      if (categoryIds && typeof categoryIds === "string") {
+        categoryIds = JSON.parse(categoryIds);
+      }
       price = parseFloat(price);
-
 
       // captures the image coming from the request
       /* const imageUrl = req.file ? `upload/${req.file.filename}` : null; */
@@ -36,7 +38,6 @@ class ProductController {
           .json({ message: "Description must be less than 255 characters" }); */
       }
 
-
       if (!imageUrl) {
         throw new AppError("Please upload an image!", 400);
         /*  return res.status(400).json({ message: "Please upload an image" }); */
@@ -44,22 +45,22 @@ class ProductController {
 
       // valide the data
       const { error } = productSchema.validate(
-        { name, description, price, imageUrl, publicId },
-        { abordEarly: false }
+        { name, description, price, imageUrl, publicId, categoryIds },
+        { abortEarly: false },
       );
 
       if (error) {
         throw new AppError(
           "Validation error!",
           400,
-          error.details.map((err) => err.message)
+          error.details.map((err) => err.message),
         );
         /*  return res.status(400).json({
           message: "Validation error",
           errors: error.details.map((error) => error.message),
         }); */
       }
-      
+
       //create a product in database
       const product = await productService.createProduct(
         userId,
@@ -67,7 +68,8 @@ class ProductController {
         description,
         price,
         imageUrl,
-        publicId
+        publicId,
+        categoryIds,
       );
 
       res
@@ -103,10 +105,11 @@ class ProductController {
 
   static async getAllProducts(req, res, next) {
     try {
-      const { page = 1, limit = 10 } = req.query;
+      const { page = 1, limit = 10, categoryId } = req.query;
       const product = await productService.getAllProducts(
         Number(page),
-        Number(limit)
+        Number(limit),
+        categoryId ? Number(categoryId) : null,
       );
 
       res.status(200).json(product); // return list contain all products

@@ -7,6 +7,7 @@ const productSchema = Joi.object({
   // imageUrl: Joi.string().uri().required(),
   imageUrl: Joi.string().required(),
   publicId: Joi.string().required(),
+  categoryIds: Joi.array().items(Joi.number().integer()).optional(),
 });
 
 module.exports = { productSchema };
