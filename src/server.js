@@ -16,6 +16,11 @@ const orderRoutes = require("./routes/order.routes.js");
 const cartRoutes = require("./routes/cart.routes.js");
 const adminRoutes = require("./routes/admin.routes.js");
 
+// import routues for categories 
+
+const categoryRoutes = require('./routes/category.routes.js');
+
+
 //import middleware handle error
 const errorHandlerMiddleware = require("./middlewares/errorHandler.middleware.js");
 const {
@@ -45,6 +50,7 @@ app.use(productRoutes); //add product routes
 app.use(orderRoutes); //add order routes
 app.use(cartRoutes); //add cart routes
 app.use(adminRoutes); //add admin routes
+app.use(categoryRoutes); //add category routes
 
 app.get("/", (req, res) => {
   res.send("API funcionando");

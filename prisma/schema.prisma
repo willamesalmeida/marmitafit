@@ -56,8 +56,9 @@ model Product {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now())
 
-  OrderItem OrderItem[]
-  CartItem  CartItem[]
+  OrderItem  OrderItem[]
+  CartItem   CartItem[]
+  categories ProductCategory[]
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -144,4 +145,24 @@ model Address {
 
   user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   orders Order[]
+}
+
+model Category {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products ProductCategory[]
+}
+
+model ProductCategory {
+  // id         Int @id @default(autoincrement())
+  productId  Int
+  categoryId Int
+
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([productId, categoryId]) // Ensure that a product can only be associated with a category once
 }
