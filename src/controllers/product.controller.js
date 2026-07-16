@@ -104,21 +104,34 @@ class ProductController {
   }
 
   static async getAllProducts(req, res, next) {
-    try {
-      const { page = 1, limit = 10, categoryId } = req.query;
-      const product = await productService.getAllProducts(
-        Number(page),
-        Number(limit),
-        categoryId ? Number(categoryId) : null,
-      );
+  try {
+    const { categoryId } = req.query;
 
-      res.status(200).json(product); // return list contain all products
-    } catch (error) {
-      next(error); // Pass the error to the global middleware
+    const products = await productService.getAllProducts(
+      categoryId ? Number(categoryId) : null,
+    );
 
-      /*  res.status(500).json({ message: "Error to get products!", error }); */
-    }
+    res.status(200).json(products);
+  } catch (error) {
+    next(error);
   }
 }
+//   static async getAllProducts(req, res, next) {
+//     try {
+//       const { page = 1, limit = 10, categoryId } = req.query;
+//       const product = await productService.getAllProducts(
+//         Number(page),
+//         Number(limit),
+//         categoryId ? Number(categoryId) : null,
+//       );
+
+//       res.status(200).json(product); // return list contain all products
+//     } catch (error) {
+//       next(error); // Pass the error to the global middleware
+
+//       /*  res.status(500).json({ message: "Error to get products!", error }); */
+//     }
+//   }
+ }
 
 module.exports = ProductController;

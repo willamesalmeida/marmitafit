@@ -96,37 +96,67 @@ class productService {
       } */
     }
   }
+  static async getAllProducts(categoryId = null) {
+  try {
+    const products = await prisma.product.findMany({
+      include: {
+        categories: {
+          include: {
+            category: true,
+          },
+        },
+      },
 
-  static async getAllProducts(page, limit, categoryId = null) {
-    try {
-      if (!page || !limit) {
-        throw new AppError("Page and limit parameters are required!", 400);
-      }
+      ...(categoryId && {
+        where: {
+          categories: {
+            some: {
+              categoryId: Number(categoryId),
+            },
+          },
+        },
+      }),
+    });
 
-      const skip = (page - 1) * limit;
-
-      //get all product in database
-      const products = await prisma.product.findMany({
-        skip,
-        take: limit,
-        include: { categories: { include: { category: true } } },
-        ...(categoryId && {
-          where: { categories: { some: { categoryId: Number(categoryId) } } },
-        }),
-      });
-
-      const totalProducts = await prisma.product.count();
-      return {
-        page,
-        limit,
-        totalPages: Math.ceil(totalProducts / limit),
-        totalProducts,
-        data: products,
-      };
-    } catch (error) {
-      throw new AppError("error fetching products!", 500);
-    }
+    return {
+      totalProducts: products.length,
+      data: products,
+    };
+  } catch (error) {
+    throw new AppError("Error fetching products!", 500);
   }
+}
+
+  // static async getAllProducts(page, limit, categoryId = null) {
+  //   try {
+  //     if (!page || !limit) {
+  //       throw new AppError("Page and limit parameters are required!", 400);
+  //     }
+
+  //     const skip = (page - 1) * limit;
+
+  //     //get all product in database
+  //     const products = await prisma.product.findMany({
+  //       skip,
+  //       take: limit,
+  //       include: { categories: { include: { category: true } } },
+  //       ...(categoryId && {
+  //         where: { categories: { some: { categoryId: Number(categoryId) } } },
+  //       }),
+  //     });
+
+  //     const totalProducts = await prisma.product.count();
+  //     return {
+  //       page,
+  //       limit,
+  //       totalPages: Math.ceil(totalProducts / limit),
+  //       totalProducts,
+  //       data: products,
+  //     };
+  //   } catch (error) {
+  //     throw new AppError("error fetching products!", 500);
+  //   }
+  // }
 }
 
 module.exports = productService;
